@@ -19,5 +19,5 @@
 
 install(FILES
     qpsk.tree.yml
-    DESTINATION share/gnuradio/grc/blocks
+    qpsk_conv32Bto2B.block.yml DESTINATION share/gnuradio/grc/blocks
 )

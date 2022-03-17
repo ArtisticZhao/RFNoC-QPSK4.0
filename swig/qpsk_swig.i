@@ -35,5 +35,8 @@
 #include <ettus/rfnoc_graph.h>
 #include <ettus/rfnoc_block.h>
 #include <ettus/rfnoc_block_generic.h>
+#include "qpsk/conv32Bto2B.h"
 %}
 
+%include "qpsk/conv32Bto2B.h"
+GR_SWIG_BLOCK_MAGIC2(qpsk, conv32Bto2B);

@@ -1,0 +1,8 @@
+
+# Current path
+RFNOC_FPGA_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+
+# Include Makefile.srcs for all subdirectories automatically
+SUBDIRS_MAKEFILE_SRCS = $(wildcard $(RFNOC_FPGA_DIR)/*/Makefile.srcs)
+include $(SUBDIRS_MAKEFILE_SRCS)
+

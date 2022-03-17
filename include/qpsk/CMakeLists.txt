@@ -22,5 +22,6 @@
 ########################################################################
 install(FILES
     api.h
-    DESTINATION include/qpsk
+    conv32Bto2B.h
+    conv32Bto2B_block_ctrl.hpp DESTINATION include/qpsk
 )
