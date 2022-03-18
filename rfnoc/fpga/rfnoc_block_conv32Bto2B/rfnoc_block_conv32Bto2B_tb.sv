@@ -838,6 +838,7 @@ module rfnoc_block_conv32Bto2B_tb;
     //--------------------------------
 
     test.start_test("Verify Block Info", 2us);
+    $display("NOCID: 0x%08X", blk_ctrl.get_noc_id());
     `ASSERT_ERROR(blk_ctrl.get_noc_id() == NOC_ID, "Incorrect NOC_ID Value");
     `ASSERT_ERROR(blk_ctrl.get_num_data_i() == NUM_PORTS_I, "Incorrect NUM_DATA_I Value");
     `ASSERT_ERROR(blk_ctrl.get_num_data_o() == NUM_PORTS_O, "Incorrect NUM_DATA_O Value");
@@ -875,34 +876,24 @@ module rfnoc_block_conv32Bto2B_tb;
 
       test.start_test("Test passing through samples", 10us);
 
-      // Generate a payload of random samples
+      // Generate a payload samples
       send_samples = {};
-      for (int i = 0; i < SPP; i++) begin
-        send_samples.push_back($random()); // 32-bit I,Q
-      end
-
+      num_bytes = 3;
+      send_samples.push_back('h5acffc1d); // 32-bit I,Q
+      send_samples.push_back('hA53003E2); // 32-bit I,Q
+      send_samples.push_back('h5acffc1d); // 32-bit I,Q
       // Queue a packet for transfer
       blk_ctrl.send_items(0, send_samples);
+      for (int i = 0; i < num_bytes; i++) begin
+        $display("send_item: 0x%08X", send_samples[i]);
+      end
 
-      // Receive the output packet
-      blk_ctrl.recv_items(0, recv_samples);
-
-      // Check the resulting payload size
-      `ASSERT_ERROR(recv_samples.size() == SPP,
-        "Received payload didn't match size of payload sent");
-
-      // Check the resulting samples
-      for (int i = 0; i < SPP; i++) begin
-        item_t sample_in;
-        item_t sample_out;
-
-        sample_in  = send_samples[i];
-        sample_out = recv_samples[i];
-
-        `ASSERT_ERROR(
-          sample_out == sample_in,
-          $sformatf("Sample %4d, received 0x%08X, expected 0x%08X",
-                    i, sample_out, sample_in));
+      // 接收数据
+      for (int j=0; j<16; j++) begin
+        blk_ctrl.recv_items(0, recv_samples);
+        for (int i = 0; i < num_bytes; i++) begin
+          $display("%d recv_item%d: 0x%08X",j, i, recv_samples[i]);
+        end
       end
 
       test.end_test();

@@ -1,8 +1,8 @@
 
 schema: rfnoc_modtool_args
 module_name: conv32Bto2B
-version: 1.0
-rfnoc_version: 1.0
+version: '1.0'
+rfnoc_version: '1.0'
 chdr_width: 64
 noc_id: 0xD6AA69D4
 makefile_srcs: "/home/lilacsat/Playground/rfnoc/RFNoC-QPSK4.0/rfnoc/fpga/rfnoc_block_conv32Bto2B/Makefile.srcs"

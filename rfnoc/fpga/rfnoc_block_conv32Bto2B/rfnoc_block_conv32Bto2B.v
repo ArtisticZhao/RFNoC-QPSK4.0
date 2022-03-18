@@ -728,7 +728,7 @@ module rfnoc_block_conv32Bto2B #(
   input  wire                   m_rfnoc_ctrl_tready
 );
 
-  //---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
   // Signal Declarations
   //---------------------------------------------------------------------------
 
@@ -742,32 +742,30 @@ module rfnoc_block_conv32Bto2B #(
   wire               m_ctrlport_req_rd;
   wire [19:0]        m_ctrlport_req_addr;
   wire [31:0]        m_ctrlport_req_data;
+  wire        ctrlport_req_has_time;  // new signal
+  wire [63:0] ctrlport_req_time;      // new signal
   reg                m_ctrlport_resp_ack;
   reg  [31:0]        m_ctrlport_resp_data;
-  // Payload Stream to User Logic: in
-  wire [32*1-1:0]    m_in_payload_tdata;
-  wire [1-1:0]       m_in_payload_tkeep;
-  wire               m_in_payload_tlast;
-  wire               m_in_payload_tvalid;
-  wire               m_in_payload_tready;
-  // Context Stream to User Logic: in
-  wire [CHDR_W-1:0]  m_in_context_tdata;
-  wire [3:0]         m_in_context_tuser;
-  wire               m_in_context_tlast;
-  wire               m_in_context_tvalid;
-  wire               m_in_context_tready;
-  // Payload Stream from User Logic: out
-  wire [32*1-1:0]    s_out_payload_tdata;
-  wire [0:0]         s_out_payload_tkeep;
-  wire               s_out_payload_tlast;
-  wire               s_out_payload_tvalid;
-  wire               s_out_payload_tready;
-  // Context Stream from User Logic: out
-  wire [CHDR_W-1:0]  s_out_context_tdata;
-  wire [3:0]         s_out_context_tuser;
-  wire               s_out_context_tlast;
-  wire               s_out_context_tvalid;
-  wire               s_out_context_tready;
+
+  // axis data
+  wire [32-1:0] m_axis_data_tdata;
+  wire [1-1:0] m_axis_data_tlast;
+  wire [1-1:0] m_axis_data_tvalid;
+  wire [1-1:0] m_axis_data_tready;
+  wire [64-1:0] m_axis_data_ttimestamp;
+  wire [1-1:0] m_axis_data_thas_time;
+  wire [16-1:0] m_axis_data_tlength;
+  wire [1-1:0] m_axis_data_teob;
+  wire [128-1:0] m_axis_data_tuser;
+
+  wire [32-1:0] s_axis_data_tdata;
+  wire [1-1:0] s_axis_data_tlast;
+  wire [1-1:0] s_axis_data_tvalid;
+  wire [1-1:0] s_axis_data_tready;
+  wire [1*128-1:0] s_axis_data_tuser;
+  wire [1-1:0] s_axis_data_teob;
+  wire [1*64-1:0] s_axis_data_ttimestamp;
+  wire [1-1:0] s_axis_data_thas_time;
 
   //---------------------------------------------------------------------------
   // NoC Shell
@@ -777,7 +775,7 @@ module rfnoc_block_conv32Bto2B #(
     .CHDR_W      (CHDR_W),
     .THIS_PORTID (THIS_PORTID),
     .MTU         (MTU)
-  ) noc_shell_conv32Bto2B_i (
+  ) noc_shell_test_i (
     //---------------------
     // Framework Interface
     //---------------------
@@ -824,36 +822,33 @@ module rfnoc_block_conv32Bto2B #(
     .m_ctrlport_req_rd    (m_ctrlport_req_rd),
     .m_ctrlport_req_addr  (m_ctrlport_req_addr),
     .m_ctrlport_req_data  (m_ctrlport_req_data),
+    .m_ctrlport_req_has_time(ctrlport_req_has_time),
+    .m_ctrlport_req_time(ctrlport_req_time),
     .m_ctrlport_resp_ack  (m_ctrlport_resp_ack),
     .m_ctrlport_resp_data (m_ctrlport_resp_data),
 
     // AXI-Stream Payload Context Clock and Reset
     .axis_data_clk        (axis_data_clk),
     .axis_data_rst        (axis_data_rst),
-    // Payload Stream to User Logic: in
-    .m_in_payload_tdata   (m_in_payload_tdata),
-    .m_in_payload_tkeep   (m_in_payload_tkeep),
-    .m_in_payload_tlast   (m_in_payload_tlast),
-    .m_in_payload_tvalid  (m_in_payload_tvalid),
-    .m_in_payload_tready  (m_in_payload_tready),
-    // Context Stream to User Logic: in
-    .m_in_context_tdata   (m_in_context_tdata),
-    .m_in_context_tuser   (m_in_context_tuser),
-    .m_in_context_tlast   (m_in_context_tlast),
-    .m_in_context_tvalid  (m_in_context_tvalid),
-    .m_in_context_tready  (m_in_context_tready),
-    // Payload Stream from User Logic: out
-    .s_out_payload_tdata  (s_out_payload_tdata),
-    .s_out_payload_tkeep  (s_out_payload_tkeep),
-    .s_out_payload_tlast  (s_out_payload_tlast),
-    .s_out_payload_tvalid (s_out_payload_tvalid),
-    .s_out_payload_tready (s_out_payload_tready),
-    // Context Stream from User Logic: out
-    .s_out_context_tdata  (s_out_context_tdata),
-    .s_out_context_tuser  (s_out_context_tuser),
-    .s_out_context_tlast  (s_out_context_tlast),
-    .s_out_context_tvalid (s_out_context_tvalid),
-    .s_out_context_tready (s_out_context_tready)
+    .m_in_axis_tdata(m_axis_data_tdata),
+    .m_in_axis_tkeep(),
+    .m_in_axis_tlast(m_axis_data_tlast),
+    .m_in_axis_tvalid(m_axis_data_tvalid),
+    .m_in_axis_tready(m_axis_data_tready),
+    .m_in_axis_ttimestamp(m_axis_data_ttimestamp),
+    .m_in_axis_thas_time(m_axis_data_thas_time),
+    .m_in_axis_tlength(m_axis_data_tlength),
+    .m_in_axis_teov(),
+    .m_in_axis_teob(m_axis_data_teob),
+    .s_out_axis_tdata(s_axis_data_tdata),
+    .s_out_axis_tkeep(1'b1),
+    .s_out_axis_tlast(s_axis_data_tlast),
+    .s_out_axis_tvalid(s_axis_data_tvalid),
+    .s_out_axis_tready(s_axis_data_tready),
+    .s_out_axis_ttimestamp(s_axis_data_ttimestamp),
+    .s_out_axis_thas_time(s_axis_data_thas_time),
+    .s_out_axis_teov(1'b0),
+    .s_out_axis_teob(s_axis_data_teob)
   );
 
   //---------------------------------------------------------------------------
@@ -912,23 +907,65 @@ module rfnoc_block_conv32Bto2B #(
   // user logic.
   //
   //---------------------------------------------------------------------------
+  //
 
-  // Sample data, pass through unchanged
-  assign s_out_payload_tdata  = m_in_payload_tdata;
-  assign s_out_payload_tlast  = m_in_payload_tlast;
-  assign s_out_payload_tvalid = m_in_payload_tvalid;
-  assign m_in_payload_tready  = s_out_payload_tready;
+  // 创建chdr总线header信息
+  // Build the expected tuser CHDR header
+  cvita_hdr_encoder cvita_hdr_encoder (
+    .pkt_type       (2'b0),
+    .eob            (m_axis_data_teob[0]),
+    .has_time       (m_axis_data_thas_time[0]),
+    .seqnum         (12'b0),
+    .payload_length (m_axis_data_tlength[0 +: 16]),
+    .src_sid        (16'b0),
+    .dst_sid        (16'b0),
+    .vita_time      (m_axis_data_ttimestamp[0 +: 64]),
+    .header         (m_axis_data_tuser[0+:128])
+  );
+  // 输出的header内容
+  // Extract bit fields from outgoing tuser CHDR header
+  assign s_axis_data_teob[0]              = s_axis_data_tuser[124 +:  1];
+  assign s_axis_data_thas_time[0]         = s_axis_data_tuser[125 +:  1];
+  assign s_axis_data_ttimestamp[0+:64] = s_axis_data_tuser[0 +: 64];
 
-  // Context data, we are not doing anything with the context
-  // (the CHDR header info) so we can simply pass through unchanged
-  assign s_out_context_tdata  = m_in_context_tdata;
-  assign s_out_context_tuser  = m_in_context_tuser;
-  assign s_out_context_tlast  = m_in_context_tlast;
-  assign s_out_context_tvalid = m_in_context_tvalid;
-  assign m_in_context_tready  = s_out_context_tready;
+  // rate change 与 qpsk模块直接信号
+  wire [31:0] sample_data;
+  wire sample_tvalid;
+  wire sample_tready;
+  wire [31:0] sample_qpsk_data;
+  wire sample_qpsk_tvalid;
+  wire sample_qpsk_tready;
 
-  // Only 1-sample per clock, so tkeep should always be asserted
-  assign s_out_payload_tkeep = 1'b1;
+  axi_rate_change #(
+    .WIDTH(32),
+    .MAX_N(1),
+    .MAX_M(16),
+    .DEFAULT_N(1),
+    .DEFAULT_M(16),
+    .SR_N_ADDR(0),
+    .SR_M_ADDR(1),
+    .SR_CONFIG_ADDR(2))
+  axi_rate_change (
+    .clk(axis_data_clk), .reset(axis_data_rst), .clear(0), .clear_user(),
+    .src_sid(16'b0), .dst_sid(16'b0),
+    .set_stb(1'b0), .set_addr(8'b0), .set_data(32'b0),  // 通过默认值设置MN，设置总线关闭
+    .i_tdata(m_axis_data_tdata), .i_tlast(m_axis_data_tlast), .i_tvalid(m_axis_data_tvalid), .i_tready(m_axis_data_tready), .i_tuser(m_axis_data_tuser),
+    .o_tdata(s_axis_data_tdata), .o_tlast(s_axis_data_tlast), .o_tvalid(s_axis_data_tvalid), .o_tready(s_axis_data_tready), .o_tuser(s_axis_data_tuser),
+    .m_axis_data_tdata(sample_data), .m_axis_data_tlast(), .m_axis_data_tvalid(sample_tvalid), .m_axis_data_tready(sample_tready),
+    .s_axis_data_tdata(sample_qpsk_data), .s_axis_data_tlast(1'b0), .s_axis_data_tvalid(sample_qpsk_tvalid), .s_axis_data_tready(sample_qpsk_tready),
+    .warning_long_throttle(), .error_extra_outputs(), .error_drop_pkt_lockup()
+    );
+
+  QPSK_data_converter mt(
+   .clk(axis_data_clk), .reset(axis_data_rst),
+   .in_tdata(sample_data),
+   .in_tvaild(sample_tvalid),
+   .in_tready(sample_tready),
+
+   .out_tdata(sample_qpsk_data),
+   .out_tvaild(sample_qpsk_tvalid),
+   .out_tready(sample_qpsk_tready)
+  );
 
 endmodule // rfnoc_block_conv32Bto2B
 
