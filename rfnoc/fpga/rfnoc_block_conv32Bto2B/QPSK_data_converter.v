@@ -21,6 +21,10 @@ parameter PRE_SLICE  = 4'b0010;
 parameter SLICE      = 4'b0100;
 parameter SLICE_LAST = 4'b1000;
 
+// 对数据映射到幅值, 目前是DAC full scale的80%
+parameter ONE = 16'h6665;
+parameter ZERO = 16'h999B;
+
 wire sample;
 assign sample = in_tvaild && in_tready;
 reg sample_reg;
@@ -125,8 +129,10 @@ end
 
 wire [4:0] cnt_m2;
 wire [4:0] cnt_m2p1;
-assign cnt_m2 = {sender_cnt, 1'b0};    // 这个是cnt*2
-assign cnt_m2p1 = {sender_cnt, 1'b1};  // cnt*2 +1
+wire [3:0] minus_cnt;
+assign minus_cnt = 4'b1111 - sender_cnt;
+assign cnt_m2 = {minus_cnt, 1'b0};    // 这个是cnt*2
+assign cnt_m2p1 = {minus_cnt, 1'b1};  // cnt*2 +1
 always @(posedge clk or posedge reset) begin
   if (reset) begin
     in_tready <= 0;
@@ -146,18 +152,46 @@ always @(posedge clk or posedge reset) begin
 
       SLICE: begin
         in_tready <= 1'b0;
-        // TODO: 下面处理输出的数据
-        out_tdata[1] <= in_tdata_reg[cnt_m2p1];
-        out_tdata[0] <= in_tdata_reg[cnt_m2];
-        out_tdata[31:2] <= 30'b0;
+        // 下面处理输出的数据
+        case ({in_tdata_reg[cnt_m2p1], in_tdata_reg[cnt_m2]})
+          2'b00: begin
+            out_tdata[31:0] <= {ONE, ONE};
+          end
+          2'b01: begin
+            out_tdata[31:0] <= {ZERO, ONE};
+          end
+          2'b11: begin
+            out_tdata[31:0] <= {ZERO, ZERO};
+          end
+          2'b10: begin
+            out_tdata[31:0] <= {ONE, ZERO};
+          end
+          default: begin
+            out_tdata[31:0] <= 32'b0;
+          end
+        endcase
         out_tvaild <= 1'b1;
       end
 
       SLICE_LAST: begin
         in_tready <= 1'b1;
-        out_tdata[1] <= in_tdata_reg[cnt_m2p1];
-        out_tdata[0] <= in_tdata_reg[cnt_m2];
-        out_tdata[31:2] <= 30'b0;
+        case ({in_tdata_reg[cnt_m2p1], in_tdata_reg[cnt_m2]})
+          2'b00: begin
+            out_tdata[31:0] <= {ONE, ONE};
+          end
+          2'b01: begin
+            out_tdata[31:0] <= {ZERO, ONE};
+          end
+          2'b11: begin
+            out_tdata[31:0] <= {ZERO, ZERO};
+          end
+          2'b10: begin
+            out_tdata[31:0] <= {ONE, ZERO};
+          end
+          default: begin
+            out_tdata[31:0] <= 32'b0;
+          end
+        endcase
       end
 
       default: begin
