@@ -936,12 +936,14 @@ module rfnoc_block_conv32Bto2B #(
   wire sample_qpsk_tvalid;
   wire sample_qpsk_tready;
 
+  wire [31:0] sample_qpsk_repeate_data;
+  wire sample_qpsk_repeate_tvalid;
+  wire sample_qpsk_repeate_tready;
+
   axi_rate_change #(
     .WIDTH(32),
-    .MAX_N(1),
-    .MAX_M(16),
     .DEFAULT_N(1),
-    .DEFAULT_M(16),
+    .DEFAULT_M(16*4),  // 32B 转 2B 数据量多16，每个再重复4次
     .SR_N_ADDR(0),
     .SR_M_ADDR(1),
     .SR_CONFIG_ADDR(2))
@@ -952,19 +954,32 @@ module rfnoc_block_conv32Bto2B #(
     .i_tdata(m_axis_data_tdata), .i_tlast(m_axis_data_tlast), .i_tvalid(m_axis_data_tvalid), .i_tready(m_axis_data_tready), .i_tuser(m_axis_data_tuser),
     .o_tdata(s_axis_data_tdata), .o_tlast(s_axis_data_tlast), .o_tvalid(s_axis_data_tvalid), .o_tready(s_axis_data_tready), .o_tuser(s_axis_data_tuser),
     .m_axis_data_tdata(sample_data), .m_axis_data_tlast(), .m_axis_data_tvalid(sample_tvalid), .m_axis_data_tready(sample_tready),
-    .s_axis_data_tdata(sample_qpsk_data), .s_axis_data_tlast(1'b0), .s_axis_data_tvalid(sample_qpsk_tvalid), .s_axis_data_tready(sample_qpsk_tready),
+    .s_axis_data_tdata(sample_qpsk_repeate_data), .s_axis_data_tlast(1'b0), .s_axis_data_tvalid(sample_qpsk_repeate_tvalid), .s_axis_data_tready(sample_qpsk_repeate_tready),
     .warning_long_throttle(), .error_extra_outputs(), .error_drop_pkt_lockup()
     );
 
   QPSK_data_converter mt(
-   .clk(axis_data_clk), .reset(axis_data_rst),
-   .in_tdata(sample_data),
-   .in_tvaild(sample_tvalid),
-   .in_tready(sample_tready),
+    .clk(axis_data_clk), .reset(axis_data_rst),
+    .in_tdata(sample_data),
+    .in_tvaild(sample_tvalid),
+    .in_tready(sample_tready),
 
-   .out_tdata(sample_qpsk_data),
-   .out_tvaild(sample_qpsk_tvalid),
-   .out_tready(sample_qpsk_tready)
+    .out_tdata(sample_qpsk_data),
+    .out_tvaild(sample_qpsk_tvalid),
+    .out_tready(sample_qpsk_tready)
+  );
+
+  Repeater#(
+    .N(4))
+  repeater(
+    .clk(axis_data_clk), .reset(axis_data_rst),
+    .in_tdata(sample_qpsk_data),
+    .in_tvaild(sample_qpsk_tvalid),
+    .in_tready(sample_qpsk_tready),
+
+    .out_tdata(sample_qpsk_repeate_data),
+    .out_tvaild(sample_qpsk_repeate_tvalid),
+    .out_tready(sample_qpsk_repeate_tready)
   );
 
 endmodule // rfnoc_block_conv32Bto2B

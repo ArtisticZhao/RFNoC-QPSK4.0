@@ -887,7 +887,7 @@ module rfnoc_block_conv32Bto2B_tb;
       end
 
       // 接收数据
-      for (int j=0; j<16*4; j++) begin
+      for (int j=0; j<16*3; j++) begin
         blk_ctrl.recv_items(0, recv_samples);
         for (int i = 0; i < num_bytes; i++) begin
           $display("%d recv_item%d: 0x%08X",j, i, recv_samples[i]);

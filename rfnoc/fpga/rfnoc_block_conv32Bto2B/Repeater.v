@@ -1,4 +1,6 @@
-module QPSK_data_converter (
+module Repeater#(
+  parameter N = 4   // 重复次数
+)(
   input               clk,
   input               reset,
 
@@ -14,16 +16,12 @@ module QPSK_data_converter (
 
 reg [3:0] cstate;
 reg [3:0] nstate;
-reg [3:0] sender_cnt;  // 发送计数器
+reg [$clog2(N)-1:0] sender_cnt;  // 发送计数器
 
 parameter IDLE       = 4'b0001;
 parameter PRE_SLICE  = 4'b0010;
 parameter SLICE      = 4'b0100;
 parameter SLICE_LAST = 4'b1000;
-
-// 对数据映射到幅值, 目前是DAC full scale的80%
-parameter ONE = 16'h6665;
-parameter ZERO = 16'h999B;
 
 wire sample;
 assign sample = in_tvaild && in_tready;
@@ -64,13 +62,18 @@ always @(posedge clk or posedge reset) begin
 end
 
 
-// 发送计数器，当在SLICE模式下进行计数
+// 发送计数器，计数值为N
 always @(posedge clk or posedge reset) begin
   if (reset) begin
     sender_cnt <= 4'd0;
   end else begin
     if ((out_tvaild && out_tready) || (sample_reg && cstate == IDLE)) begin
-      sender_cnt <= sender_cnt + 1'b1;
+      if (sender_cnt == N-1) begin
+        sender_cnt <= 0;
+      end
+      else begin
+        sender_cnt <= sender_cnt + 1'b1;
+      end
     end
     else begin
       sender_cnt <= sender_cnt;
@@ -101,7 +104,7 @@ always @(*) begin
     end
 
     SLICE: begin
-      if (sender_cnt == 4'd15) begin
+      if (sender_cnt == N-2) begin
         nstate = SLICE_LAST;
       end else begin
         nstate = SLICE;
@@ -109,7 +112,7 @@ always @(*) begin
     end
 
     SLICE_LAST: begin
-      if (sender_cnt == 4'd0) begin
+      if (sender_cnt == N-1) begin
         if (in_tvaild_reg)
           nstate = SLICE;
         else
@@ -126,13 +129,6 @@ end
 
 
 // fsm-3
-
-wire [4:0] cnt_m2;
-wire [4:0] cnt_m2p1;
-wire [3:0] minus_cnt;
-assign minus_cnt = 4'b1111 - sender_cnt;
-assign cnt_m2 = {minus_cnt, 1'b0};    // 这个是cnt*2
-assign cnt_m2p1 = {minus_cnt, 1'b1};  // cnt*2 +1
 always @(posedge clk or posedge reset) begin
   if (reset) begin
     in_tready <= 0;
@@ -152,46 +148,15 @@ always @(posedge clk or posedge reset) begin
 
       SLICE: begin
         in_tready <= 1'b0;
-        // 下面处理输出的数据
-        case ({in_tdata_reg[cnt_m2p1], in_tdata_reg[cnt_m2]})
-          2'b00: begin
-            out_tdata[31:0] <= {ONE, ONE};
-          end
-          2'b01: begin
-            out_tdata[31:0] <= {ZERO, ONE};
-          end
-          2'b11: begin
-            out_tdata[31:0] <= {ZERO, ZERO};
-          end
-          2'b10: begin
-            out_tdata[31:0] <= {ONE, ZERO};
-          end
-          default: begin
-            out_tdata[31:0] <= 32'b0;
-          end
-        endcase
+        // 重复输出
+        out_tdata <= in_tdata_reg;
         out_tvaild <= 1'b1;
       end
 
       SLICE_LAST: begin
         in_tready <= 1'b1;
-        case ({in_tdata_reg[cnt_m2p1], in_tdata_reg[cnt_m2]})
-          2'b00: begin
-            out_tdata[31:0] <= {ONE, ONE};
-          end
-          2'b01: begin
-            out_tdata[31:0] <= {ZERO, ONE};
-          end
-          2'b11: begin
-            out_tdata[31:0] <= {ZERO, ZERO};
-          end
-          2'b10: begin
-            out_tdata[31:0] <= {ONE, ZERO};
-          end
-          default: begin
-            out_tdata[31:0] <= 32'b0;
-          end
-        endcase
+        // 重复输出
+        out_tdata <= in_tdata_reg;
       end
 
       default: begin
