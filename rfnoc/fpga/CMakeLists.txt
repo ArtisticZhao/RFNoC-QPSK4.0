@@ -14,7 +14,5 @@ install(FILES
 
 # Call add_subdirectory() for every subdirectory
 SUBDIRLIST(subdirs ${CMAKE_CURRENT_SOURCE_DIR})
-foreach(subdir ${subdirs})
-    add_subdirectory(${subdir})
-endforeach()
-
+add_subdirectory(rfnoc_block_conv32Bto2B)
+add_subdirectory(rfnoc_block_PulseShapingFilter)
