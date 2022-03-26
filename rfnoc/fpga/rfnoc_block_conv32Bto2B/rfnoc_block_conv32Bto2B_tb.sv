@@ -787,10 +787,13 @@ module rfnoc_block_conv32Bto2B_tb;
     assign m_rfnoc_chdr_tready[i] = s_chdr[i].tready;
   end
 
+  parameter NUM = 5;
+
   rfnoc_block_conv32Bto2B #(
     .THIS_PORTID         (THIS_PORTID),
     .CHDR_W              (CHDR_W),
-    .MTU                 (MTU)
+    .MTU                 (MTU),
+    .N                   (NUM)
   ) dut (
     .rfnoc_chdr_clk      (rfnoc_chdr_clk),
     .rfnoc_ctrl_clk      (rfnoc_ctrl_clk),
@@ -870,11 +873,11 @@ module rfnoc_block_conv32Bto2B_tb;
     end
 
     begin
-      int          num_bytes;
+      int num_bytes;
       item_t send_samples[$];
       item_t recv_samples[$];
 
-      test.start_test("Test passing through samples", 5us);
+      test.start_test("Test passing through samples", 50us);
 
       // Generate a payload samples
       send_samples = {};
@@ -887,7 +890,7 @@ module rfnoc_block_conv32Bto2B_tb;
       end
 
       // 接收数据
-      for (int j=0; j<16*4; j++) begin
+      for (int j=0; j<16*NUM; j++) begin
         blk_ctrl.recv_items(0, recv_samples);
         for (int i = 0; i < num_bytes; i++) begin
           $display("%d recv_item%d: 0x%08X",j, i, recv_samples[i]);

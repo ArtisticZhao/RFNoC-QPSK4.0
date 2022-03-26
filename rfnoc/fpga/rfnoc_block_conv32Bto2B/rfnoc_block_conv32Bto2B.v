@@ -697,7 +697,8 @@
 module rfnoc_block_conv32Bto2B #(
   parameter [9:0] THIS_PORTID     = 10'd0,
   parameter       CHDR_W          = 64,
-  parameter [5:0] MTU             = 10
+  parameter [5:0] MTU             = 10,
+  parameter       N               = 4
 )(
   // RFNoC Framework Clocks and Resets
   input  wire                   rfnoc_chdr_clk,
@@ -943,7 +944,7 @@ module rfnoc_block_conv32Bto2B #(
   axi_rate_change #(
     .WIDTH(32),
     .DEFAULT_N(1),
-    .DEFAULT_M(16*4),  // 32B 转 2B 数据量多16，每个再重复4次
+    .DEFAULT_M(16*N),  // 32B 转 2B 数据量多16，每个再重复4次
     .SR_N_ADDR(0),
     .SR_M_ADDR(1),
     .SR_CONFIG_ADDR(2))
@@ -958,27 +959,40 @@ module rfnoc_block_conv32Bto2B #(
     .warning_long_throttle(), .error_extra_outputs(), .error_drop_pkt_lockup()
     );
 
+  // Repeater#(
+  //   .N(4)
+  // ) mt(
+  //   .clk(axis_data_clk), .reset(axis_data_rst),
+  //   .in_tdata(sample_data),
+  //   .in_tvalid(sample_tvalid),
+  //   .in_tready(sample_tready),
+  //
+  //   .out_tdata(sample_qpsk_repeate_data),
+  //   .out_tvalid(sample_qpsk_repeate_tvalid),
+  //   .out_tready(sample_qpsk_repeate_tready)
+  // );
+
   QPSK_data_converter mt(
     .clk(axis_data_clk), .reset(axis_data_rst),
     .in_tdata(sample_data),
-    .in_tvaild(sample_tvalid),
+    .in_tvalid(sample_tvalid),
     .in_tready(sample_tready),
 
     .out_tdata(sample_qpsk_data),
-    .out_tvaild(sample_qpsk_tvalid),
+    .out_tvalid(sample_qpsk_tvalid),
     .out_tready(sample_qpsk_tready)
   );
 
   Repeater#(
-    .N(4))
+    .N(N))
   repeater(
     .clk(axis_data_clk), .reset(axis_data_rst),
     .in_tdata(sample_qpsk_data),
-    .in_tvaild(sample_qpsk_tvalid),
+    .in_tvalid(sample_qpsk_tvalid),
     .in_tready(sample_qpsk_tready),
 
     .out_tdata(sample_qpsk_repeate_data),
-    .out_tvaild(sample_qpsk_repeate_tvalid),
+    .out_tvalid(sample_qpsk_repeate_tvalid),
     .out_tready(sample_qpsk_repeate_tready)
   );
 

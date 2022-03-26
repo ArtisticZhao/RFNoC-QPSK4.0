@@ -1,3 +1,4 @@
 /work/
 /xsim_proj/
 *.log
+/build-ip/

@@ -192,7 +192,7 @@ macro(RFNOC_ADD_TB_DIR)
         message(STATUS "Adding testbench target: ${_target_name}")
         # Use e310 so the simulation uses a free webpack license compatiable device
         add_custom_target(${_target_name}
-            COMMAND ${CMAKE_SOURCE_DIR}/build/cmake/Modules/run_testbench.sh ${UHD_FPGA_DIR} e310 ${CMAKE_CURRENT_SOURCE_DIR} xsim
+            COMMAND ${CMAKE_SOURCE_DIR}/build/cmake/Modules/run_testbench.sh ${UHD_FPGA_DIR} x300 ${CMAKE_CURRENT_SOURCE_DIR} xsim
         )
         add_dependencies(testbenches ${_target_name})
     endif()

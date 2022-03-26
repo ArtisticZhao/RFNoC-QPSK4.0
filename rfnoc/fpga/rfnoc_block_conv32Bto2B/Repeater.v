@@ -5,35 +5,19 @@ module Repeater#(
   input               reset,
 
   input [31:0]        in_tdata,
-  input               in_tvaild,
+  input               in_tvalid,
   output reg          in_tready,
 
-  output reg [31:0]   out_tdata,
-  output reg          out_tvaild,
+  output     [31:0]   out_tdata,
+  output reg          out_tvalid,
   input               out_tready
 
 );
 
-reg [3:0] cstate;
-reg [3:0] nstate;
 reg [$clog2(N)-1:0] sender_cnt;  // 发送计数器
 
-parameter IDLE       = 4'b0001;
-parameter PRE_SLICE  = 4'b0010;
-parameter SLICE      = 4'b0100;
-parameter SLICE_LAST = 4'b1000;
-
 wire sample;
-assign sample = in_tvaild && in_tready;
-reg sample_reg;
-always @(posedge clk or posedge reset) begin
-  if (reset) begin
-    sample_reg <= 1'b0;
-  end
-  else begin
-    sample_reg <= sample;
-  end
-end
+assign sample = in_tvalid && in_tready;
 
 // 输入数据缓存，会导致输入数据一个周期的延迟
 reg [31:0] in_tdata_reg;
@@ -42,7 +26,7 @@ always @(posedge clk or posedge reset) begin
     in_tdata_reg <= 32'b0;
   end
   else begin
-    if (sample || nstate == SLICE_LAST) begin
+    if (sample) begin
       in_tdata_reg <= in_tdata;
     end
     else begin
@@ -51,23 +35,12 @@ always @(posedge clk or posedge reset) begin
   end
 end
 
-reg in_tvaild_reg;
-always @(posedge clk or posedge reset) begin
-  if (reset) begin
-    in_tvaild_reg <= 1'b0;
-  end
-  else begin
-    in_tvaild_reg <= in_tvaild;
-  end
-end
-
-
-// 发送计数器，计数值为N
+// 发送计数器 计数值为N
 always @(posedge clk or posedge reset) begin
   if (reset) begin
     sender_cnt <= 4'd0;
   end else begin
-    if ((out_tvaild && out_tready) || (sample_reg && cstate == IDLE)) begin
+    if (out_tvalid && out_tready) begin
       if (sender_cnt == N-1) begin
         sender_cnt <= 0;
       end
@@ -81,91 +54,112 @@ always @(posedge clk or posedge reset) begin
   end
 end
 
+// --- FSM 3 ---
+localparam IDLE      = 4'b0001;
+// 因为in_tdata_reg会延迟一个周期，这个状态是用来同步in_tdata_reg的信号的，并在这个状态下需要tready=0来阻塞
+localparam HEADER    = 4'b0010;
+localparam SEND      = 4'b0100;
+localparam SEND_LAST = 4'b1000;
+reg [3:0] cstate, nstate;
 // fsm-1
 always @(posedge clk or posedge reset) begin
-  if(reset)   cstate <= IDLE;
-  else        cstate <= nstate;
+  if (reset) begin
+    cstate <= IDLE;
+  end
+  else begin
+    cstate <= nstate;
+  end
 end
-
 // fsm-2
 always @(*) begin
   nstate = IDLE;
-  case (cstate)
+  case(cstate)
     IDLE: begin
       if (sample) begin
-        nstate = PRE_SLICE;
-      end else begin
+        nstate = HEADER;
+      end
+      else begin
         nstate = IDLE;
       end
     end
-
-    PRE_SLICE: begin
-      nstate = SLICE;
+    HEADER: begin
+      nstate = SEND;
     end
-
-    SLICE: begin
-      if (sender_cnt == N-2) begin
-        nstate = SLICE_LAST;
-      end else begin
-        nstate = SLICE;
+    SEND: begin
+      if (sender_cnt == N-2 && out_tvalid && out_tready) begin  // 发送15位后 第16位进入到SEND_LAST状态，来判断是否进入IDLE
+        nstate = SEND_LAST;
+      end
+      else begin
+        nstate = SEND;
       end
     end
-
-    SLICE_LAST: begin
-      if (sender_cnt == N-1) begin
-        if (in_tvaild_reg)
-          nstate = SLICE;
-        else
+    SEND_LAST: begin
+      if (sample) begin
+        nstate = SEND;
+      end
+      else begin
+        if (out_tvalid && out_tready) begin
           nstate = IDLE;
-      end else begin
-        nstate = SLICE_LAST;
+        end
+        else begin
+          nstate = SEND_LAST;
+        end
       end
     end
-    default: begin
-      nstate = IDLE;
-    end
+    default: nstate = IDLE;
   endcase
 end
-
-
 // fsm-3
 always @(posedge clk or posedge reset) begin
   if (reset) begin
-    in_tready <= 0;
+    in_tready <= 1;
+    // out_tdata <= 32'b0;
+    out_tvalid <= 0;
   end
   else begin
     case (nstate)
       IDLE: begin
-        in_tready <= 1'b1;
-        out_tdata <= 32'b0;
-        out_tvaild <= 1'b0;
+        in_tready <= 1;
+        // out_tdata <= 32'b0;
+        out_tvalid <= 0;
       end
-
-      PRE_SLICE: begin
-        in_tready <= 1'b0;
-        out_tvaild <= 1'b0;
+      HEADER: begin
+        in_tready <= 0;
+        // out_tdata[0] <= in_tdata[cnt_m2];
+        // out_tdata[1] <= in_tdata[cnt_m2p1];
+        // out_tdata[31:2] <= 0;
+        out_tvalid <= 0;
       end
-
-      SLICE: begin
-        in_tready <= 1'b0;
-        // 重复输出
-        out_tdata <= in_tdata_reg;
-        out_tvaild <= 1'b1;
+      SEND: begin
+        in_tready <= 0;
+        if (sender_cnt == 0) begin
+          // out_tdata[0] <= in_tdata_reg[cnt_m2];
+          // out_tdata[1] <= in_tdata_reg[cnt_m2p1];
+          // out_tdata[31:2] <= 0;
+        end
+        else begin
+          // out_tdata[0] <= in_tdata_reg[cnt_m2];
+          // out_tdata[1] <= in_tdata_reg[cnt_m2p1];
+          // out_tdata[31:2] <= 0;
+        end
+        out_tvalid <= 1;
       end
-
-      SLICE_LAST: begin
-        in_tready <= 1'b1;
-        // 重复输出
-        out_tdata <= in_tdata_reg;
+      SEND_LAST: begin
+        in_tready <= 1;
+        // out_tdata[0] <= in_tdata_reg[cnt_m2];
+        // out_tdata[1] <= in_tdata_reg[cnt_m2p1];
+        // out_tdata[31:2] <= 0;
+        out_tvalid <= 1;
       end
-
       default: begin
-        in_tready <= 1'b1;
-        out_tdata <= 32'b0;
-        out_tvaild <= 1'b0;
+        in_tready <= 1;
+        // out_tdata <= 32'b0;
+        out_tvalid <= 0;
       end
     endcase
   end
 end
+
+assign out_tdata = in_tdata_reg;
 
 endmodule

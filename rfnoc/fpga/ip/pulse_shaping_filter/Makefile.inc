@@ -10,6 +10,8 @@ pulse_shaping_filter.xci.out \
 synth/pulse_shaping_filter.vhd \
 )
 
+# 这里的IP_BUILD_DIR 指向 <uhd-repo>/fpga/usrp3/top/x300/build-ip/xc7k410tffg900-2
+# 其中x300 xc7k410tffg900-2 是根据所使用的USRP平台而改变的
 $(info IP_BUILD_DIR in ip folder [${IP_BUILD_DIR}])
 
 # 调用ip编译命令
