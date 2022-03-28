@@ -934,6 +934,7 @@ module rfnoc_block_PulseShapingFilter #(
     .s_axis_data_tlast(m_in_payload_tlast),    // input wire s_axis_data_tlast
     .s_axis_data_tdata(i_sample),    // input wire [15 : 0] s_axis_data_tdata
     .m_axis_data_tvalid(i_tvalid),  // output wire m_axis_data_tvalid
+    .m_axis_data_tready(s_out_payload_tready),  // input wire m_axis_data_tready
     .m_axis_data_tlast(i_tlast),    // output wire m_axis_data_tlast
     .m_axis_data_tdata(i_psf)    // output wire [39 : 0] m_axis_data_tdata
   );
@@ -944,12 +945,13 @@ module rfnoc_block_PulseShapingFilter #(
     .s_axis_data_tlast(m_in_payload_tlast),    // input wire s_axis_data_tlast
     .s_axis_data_tdata(q_sample),    // input wire [15 : 0] s_axis_data_tdata
     .m_axis_data_tvalid(q_tvalid),  // output wire m_axis_data_tvalid
+    .m_axis_data_tready(s_out_payload_tready),  // input wire m_axis_data_tready
     .m_axis_data_tlast(q_tlast),    // output wire m_axis_data_tlast
     .m_axis_data_tdata(q_psf)    // output wire [39 : 0] m_axis_data_tdata
   );
   assign s_out_payload_tdata  = {i_psf[39:24], q_psf[39:24]};
-  assign s_out_payload_tlast  = q_tlast;
   assign s_out_payload_tvalid = q_tvalid;
+  assign s_out_payload_tlast  = q_tlast;
 
   // Context data, we are not doing anything with the context
   // (the CHDR header info) so we can simply pass through unchanged
