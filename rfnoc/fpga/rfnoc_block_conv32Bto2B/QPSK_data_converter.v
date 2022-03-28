@@ -6,7 +6,7 @@ module QPSK_data_converter (
   input             in_tvalid,
   output reg        in_tready,
 
-  output     [31:0] out_tdata,
+  output reg [31:0] out_tdata,
   output reg        out_tvalid,
   input             out_tready
 
@@ -119,55 +119,59 @@ end
 always @(posedge clk or posedge reset) begin
   if (reset) begin
     in_tready <= 1;
-    // out_tdata <= 32'b0;
     out_tvalid <= 0;
   end
   else begin
     case (nstate)
       IDLE: begin
         in_tready <= 1;
-        // out_tdata <= 32'b0;
         out_tvalid <= 0;
       end
       HEADER: begin
         in_tready <= 0;
-        // out_tdata[0] <= in_tdata[cnt_m2];
-        // out_tdata[1] <= in_tdata[cnt_m2p1];
-        // out_tdata[31:2] <= 0;
         out_tvalid <= 0;
       end
       SEND: begin
         in_tready <= 0;
         if (sender_cnt == 0) begin
-          // out_tdata[0] <= in_tdata_reg[cnt_m2];
-          // out_tdata[1] <= in_tdata_reg[cnt_m2p1];
-          // out_tdata[31:2] <= 0;
         end
         else begin
-          // out_tdata[0] <= in_tdata_reg[cnt_m2];
-          // out_tdata[1] <= in_tdata_reg[cnt_m2p1];
-          // out_tdata[31:2] <= 0;
         end
         out_tvalid <= 1;
       end
       SEND_LAST: begin
         in_tready <= 1;
-        // out_tdata[0] <= in_tdata_reg[cnt_m2];
-        // out_tdata[1] <= in_tdata_reg[cnt_m2p1];
-        // out_tdata[31:2] <= 0;
         out_tvalid <= 1;
       end
       default: begin
         in_tready <= 1;
-        // out_tdata <= 32'b0;
         out_tvalid <= 0;
       end
     endcase
   end
 end
 
-assign out_tdata[31:2] = 0;
-assign out_tdata[0] = in_tdata_reg[cnt_m2];
-assign out_tdata[1] = in_tdata_reg[cnt_m2p1];
+// for DEBUG
+// assign out_tdata[31:2] = 0;
+// assign out_tdata[0] = in_tdata_reg[cnt_m2];
+// assign out_tdata[1] = in_tdata_reg[cnt_m2p1];
+
+// remap output value to DAC output.
+always @(*) begin
+  case ({in_tdata_reg[cnt_m2p1], in_tdata_reg[cnt_m2]})
+    2'b00: begin
+      out_tdata[31:0] = {ONE, ONE};
+    end
+    2'b01: begin
+      out_tdata[31:0] = {ZERO, ONE};
+    end
+    2'b11: begin
+      out_tdata[31:0] = {ZERO, ZERO};
+    end
+    2'b10: begin
+      out_tdata[31:0] = {ONE, ZERO};
+    end
+  endcase
+end
 
 endmodule

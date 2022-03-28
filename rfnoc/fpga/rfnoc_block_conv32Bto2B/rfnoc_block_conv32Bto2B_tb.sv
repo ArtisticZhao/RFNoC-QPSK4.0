@@ -787,7 +787,7 @@ module rfnoc_block_conv32Bto2B_tb;
     assign m_rfnoc_chdr_tready[i] = s_chdr[i].tready;
   end
 
-  parameter NUM = 5;
+  parameter NUM = 4;
 
   rfnoc_block_conv32Bto2B #(
     .THIS_PORTID         (THIS_PORTID),
@@ -881,8 +881,9 @@ module rfnoc_block_conv32Bto2B_tb;
 
       // Generate a payload samples
       send_samples = {};
-      num_bytes = 1;
+      num_bytes = 2;
       send_samples.push_back('h5acffc1d); // 32-bit I,Q
+      send_samples.push_back('ha53003e2); // 32-bit I,Q
       // Queue a packet for transfer
       blk_ctrl.send_items(0, send_samples);
       for (int i = 0; i < num_bytes; i++) begin
