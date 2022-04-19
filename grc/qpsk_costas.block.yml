@@ -1,0 +1,55 @@
+id: qpsk_costas
+label: RFNoC costas
+
+templates:
+  imports: |-
+    import qpsk
+  make: |-
+    qpsk.costas(
+      self.rfnoc_graph,
+      uhd.device_addr(${block_args}),
+      ${device_select},
+      ${instance_select})
+    self.${id}.set_int_property('user_reg', ${user_reg})
+  callbacks:
+  - set_int_property('user_reg', ${user_reg})
+
+# Make one 'parameter' node for every Parameter you want settable from the GUI.
+
+parameters:
+- id: user_reg
+  label: User Register
+  dtype: int
+  default: 0
+- id: block_args
+  label: Block Args
+  dtype: string
+  default: ""
+- id: device_select
+  label: Device Select
+  dtype: int
+  default: -1
+- id: instance_select
+  label: Instance Select
+  dtype: int
+  default: -1
+
+# Make one 'inputs' node per input. Include:
+#    label (an identifier for the GUI)
+#    dtype (data type of expected data)
+#    optional (set to 1 for optional inputs)
+inputs:
+- domain: rfnoc
+  label: in
+  dtype: 'sc16'
+
+# Make out 'outputs' node per output.
+#    label (an identifier for the GUI)
+#    dtype (data type of expected data)
+#    optional (set to 1 for optional outputs)
+outputs:
+- domain: rfnoc
+  label: out
+  dtype: 'sc16'
+
+file_format: 1

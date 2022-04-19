@@ -20,5 +20,6 @@
 install(FILES
     qpsk.tree.yml
     qpsk_conv32Bto2B.block.yml
-    qpsk_PulseShapingFilter.block.yml DESTINATION share/gnuradio/grc/blocks
+    qpsk_PulseShapingFilter.block.yml
+    qpsk_costas.block.yml DESTINATION share/gnuradio/grc/blocks
 )

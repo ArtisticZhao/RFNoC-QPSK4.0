@@ -1,3 +1,4 @@
 '[qpsk]':
 - qpsk_conv32Bto2B
 - qpsk_PulseShapingFilter
+- qpsk_costas

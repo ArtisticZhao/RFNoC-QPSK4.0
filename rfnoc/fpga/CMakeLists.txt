@@ -16,3 +16,4 @@ install(FILES
 SUBDIRLIST(subdirs ${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory(rfnoc_block_conv32Bto2B)
 add_subdirectory(rfnoc_block_PulseShapingFilter)
+add_subdirectory(rfnoc_block_costas)

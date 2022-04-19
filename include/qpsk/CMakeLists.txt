@@ -25,5 +25,7 @@ install(FILES
     conv32Bto2B.h
     conv32Bto2B_block_ctrl.hpp
     PulseShapingFilter.h
-    PulseShapingFilter_block_ctrl.hpp DESTINATION include/qpsk
+    PulseShapingFilter_block_ctrl.hpp
+    costas.h
+    costas_block_ctrl.hpp DESTINATION include/qpsk
 )

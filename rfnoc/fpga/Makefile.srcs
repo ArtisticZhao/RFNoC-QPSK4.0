@@ -6,11 +6,3 @@ RFNOC_FPGA_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 SUBDIRS_MAKEFILE_SRCS = $(wildcard $(RFNOC_FPGA_DIR)/*/Makefile.srcs)
 include $(SUBDIRS_MAKEFILE_SRCS)
 
-# Add IP core makefile
-$(info $$RFNOC_FPGA_DIR [${RFNOC_FPGA_DIR}])
-include $(RFNOC_FPGA_DIR)/ip/pulse_shaping_filter/Makefile.inc
-LIB_IP_XCI_SRCS += $(LIB_IP_PULSE_SHAPING_FILTER_SRCS)
-
-#RFNOC_OOT_SRCS += $(abspath $(addprefix ${RFNOC_FPGA_DIR}, \
-#$(IP_BUILD_DIR)/pulse_shaping_filter/pulse_shaping_filter.xci \
-#))

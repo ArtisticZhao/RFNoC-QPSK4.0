@@ -37,9 +37,12 @@
 #include <ettus/rfnoc_block_generic.h>
 #include "qpsk/conv32Bto2B.h"
 #include "qpsk/PulseShapingFilter.h"
+#include "qpsk/costas.h"
 %}
 
 %include "qpsk/conv32Bto2B.h"
 GR_SWIG_BLOCK_MAGIC2(qpsk, conv32Bto2B);
 %include "qpsk/PulseShapingFilter.h"
 GR_SWIG_BLOCK_MAGIC2(qpsk, PulseShapingFilter);
+%include "qpsk/costas.h"
+GR_SWIG_BLOCK_MAGIC2(qpsk, costas);

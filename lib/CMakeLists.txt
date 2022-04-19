@@ -27,6 +27,8 @@ list(APPEND qpsk_sources
     conv32Bto2B_block_ctrl_impl.cpp
     PulseShapingFilter_impl.cc
     PulseShapingFilter_block_ctrl_impl.cpp
+    costas_impl.cc
+    costas_block_ctrl_impl.cpp
 )
 
 set(qpsk_sources "${qpsk_sources}" PARENT_SCOPE)
