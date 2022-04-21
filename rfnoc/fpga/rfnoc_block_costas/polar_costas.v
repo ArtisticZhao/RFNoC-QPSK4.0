@@ -49,11 +49,11 @@ cmpy_0 cmpy (
   .aclk(aclk),                              // input wire aclk
   .aresetn(aresetn),                        // input wire aresetn
   .s_axis_a_tvalid(nco_out_tvalid),        // input wire s_axis_a_tvalid
-  .s_axis_a_tdata(nco_out_tdata),          // input wire [31 : 0] s_axis_a_tdata. [31:16] Q(Imag) fix16_0; [15:0] I(Real) fix16_0
+  .s_axis_a_tdata(nco_out_tdata),          // input wire [31 : 0] s_axis_a_tdata. [31:16] Q(Imag) fix16_15; [15:0] I(Real) fix16_15
   .s_axis_b_tvalid(s_axis_i_tvalid && s_axis_q_tvalid),        // input wire s_axis_b_tvalid
-  .s_axis_b_tdata({s_axis_q_tdata, s_axis_i_tdata}),          // input wire [31 : 0] s_axis_b_tdata. [31:16] Q(Imag) fix16_0; [15:0] I(Real) fix16_0
+  .s_axis_b_tdata({s_axis_q_tdata, s_axis_i_tdata}),          // input wire [31 : 0] s_axis_b_tdata. [31:16] Q(Imag) fix16_15; [15:0] I(Real) fix16_15
   .m_axis_dout_tvalid(mixer_out_tvalid),  // output wire m_axis_dout_tvalid
-  .m_axis_dout_tdata(mixer_out_tdata)     // output wire [31 : 0] m_axis_dout_tdata. [31:16] Q(Imag) fix16_0; [15:0] I(Real) fix16_0
+  .m_axis_dout_tdata(mixer_out_tdata)     // output wire [31 : 0] m_axis_dout_tdata. [31:16] Q(Imag) fix16_13; [15:0] I(Real) fix16_13
 );
 
 // 鉴相器
@@ -95,7 +95,7 @@ always @(posedge aclk or negedge aresetn) begin
   end
 end
 
-assign phase_detect = {before_LF_plus[15], before_LF_plus} - {before_LF_minus[15], before_LF_minus};  // [16:0] sfix17_15
+assign phase_detect = {before_LF_plus[15], before_LF_plus} - {before_LF_minus[15], before_LF_minus};  // [16:0] sfix17_13
 
 wire signed [17:0] loop_filter_out;
 wire               loop_filter_out_valid;
@@ -104,33 +104,38 @@ loop_filter lp
 (
    .rst_n(aresetn),
    .clk(aclk),
-   .pd(phase_detect),                // 鉴相器输出 [16:0] sfix17_15
+   .pd(phase_detect),                // 鉴相器输出 [16:0] sfix17_13
    .pd_valid(phase_detect_valid),
-   .dout(loop_filter_out), // loop filter 输出[17:0] sfix18_15
+   .dout(loop_filter_out), // loop filter 输出[17:0] sfix18_13
    .dout_valid(loop_filter_out_valid)
 );
 
-reg signed [21:0] pacc;   // sfix22_15
+// 环路增益 K = 1/256
+wire signed [17:0] K_loop_filter;
+assign K_loop_filter = { {8{loop_filter_out[17]}}, loop_filter_out[17:8] };  // sfix18_13
+
+reg signed [21:0] pacc;   // sfix22_13
 
 // pacc = pacc + loop_filter_out
 
 always @(posedge aclk or negedge aresetn) begin
   if(!aresetn) pacc <= 22'h1;
   else begin
-    if(loop_filter_out_valid) pacc <= pacc + loop_filter_out;
+    if(loop_filter_out_valid) pacc <= pacc + K_loop_filter;
     else pacc <= pacc;
   end
 end
 
-reg signed [21:0] pacc_abs;  //// sfix22_15
+reg signed [21:0] pacc_abs;  //// sfix22_13
 
 always @(*) begin
-  if (pacc[21]) pacc_abs = -pacc;
-  else pacc_abs = pacc;
+  if (pacc[21]) pacc_abs = +pacc;
+  else pacc_abs = -pacc;
 end
 
-// 根据matlab公式， pacc的结果仍然需要 /256 = 2^8. 首先需要将小数点对齐，后补6
+// 首先需要将小数点对齐，后补6
 // 位0，之后后面舍弃8位，即除256
-assign phase_offset_tdata = { {6'b0}, pacc_abs[21:4] };      // [23:0]   ufix21_21
+// assign phase_offset_tdata = { {2'b0}, pacc_abs[21:0] };      // [23:0]   ufix21_21
+assign phase_offset_tdata = {  pacc_abs[15:0] , {8'b0}};      // [23:0]   ufix21_21
 assign phase_offset_tvalid = loop_filter_out_valid;
 endmodule
