@@ -243,8 +243,25 @@ module rfnoc_block_costas #(
   wire [15:0] i, q;
   assign i = m_in_payload_tdata[31:16];
   assign q = m_in_payload_tdata[15:0];
+  wire [15:0] i_out, q_out;
+  polar_costas polar_costas(
+    .aclk(axis_data_clk),
+    .aresetn(~axis_data_rst),
+    .s_axis_i_tdata(i),
+    .s_axis_i_tvalid(m_in_payload_tvalid),
+    .s_axis_i_tready(m_in_payload_tready),
+    .s_axis_q_tdata(q),
+    .s_axis_q_tvalid(m_in_payload_tvalid),
+    .s_axis_q_tready(),
+    .m_axis_i_sync_tdata(i_out),
+    .m_axis_i_sync_tvalid(),
+    .m_axis_i_sync_tready(1'b1),
+    .m_axis_q_sync_tdata(q_out),
+    .m_axis_q_sync_tvalid(),
+    .m_axis_q_sync_tready(1'b1)
+  );
   // Sample data, pass through unchanged
-  assign s_out_payload_tdata  = {i, q};
+  assign s_out_payload_tdata  = {i_out, q_out};
   assign s_out_payload_tlast  = m_in_payload_tlast;
   assign s_out_payload_tvalid = m_in_payload_tvalid;
   assign m_in_payload_tready  = s_out_payload_tready;
