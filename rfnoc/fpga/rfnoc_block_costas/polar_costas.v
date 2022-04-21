@@ -21,10 +21,10 @@ module polar_costas (
 
 wire [31:0] nco_out_tdata;
 wire        nco_out_tvalid;
-wire [31:0] mixer_out_tdata;
+wire [79:0] mixer_out_tdata;// output wire [79 : 0] m_axis_dout_tdata. [31:16] Q(Imag) fix33_30; [15:0] I(Real) fix33_30
 wire        mixer_out_tvalid;
-wire signed [16:0] phase_detect;
-wire [23:0] phase_offset_tdata;
+wire signed [33:0] phase_detect;
+wire [31:0] phase_offset_tdata;
 wire        phase_offset_tvalid;
 
 // debug
@@ -38,9 +38,9 @@ nco nco (
   .aclk(aclk),                                // input wire aclk
   .aresetn(aresetn),                          // input wire aresetn
   .s_axis_phase_tvalid(s_axis_i_tvalid),  // input wire s_axis_phase_tvalid
-  .s_axis_phase_tdata(phase_offset_tdata),    // input wire [23 : 0] s_axis_phase_tdata, phase increment ufix21_21
+  .s_axis_phase_tdata(phase_offset_tdata),    // input wire [31 : 0] s_axis_phase_tdata, phase increment ufix30_30
   .m_axis_data_tvalid(nco_out_tvalid),    // output wire m_axis_data_tvalid
-  .m_axis_data_tdata(nco_out_tdata)      // output wire [31 : 0] m_axis_data_tdata  [31:16] sine fix16_15; [15:0]cos fix16_15
+  .m_axis_data_tdata(nco_out_tdata)      // output wire [79 : 0] m_axis_dout_tdata. [72:40] Q(Imag) fix33_30; [32:0] I(Real) fix33_30
 );
 
 
@@ -53,21 +53,21 @@ cmpy_0 cmpy (
   .s_axis_b_tvalid(s_axis_i_tvalid && s_axis_q_tvalid),        // input wire s_axis_b_tvalid
   .s_axis_b_tdata({s_axis_q_tdata, s_axis_i_tdata}),          // input wire [31 : 0] s_axis_b_tdata. [31:16] Q(Imag) fix16_15; [15:0] I(Real) fix16_15
   .m_axis_dout_tvalid(mixer_out_tvalid),  // output wire m_axis_dout_tvalid
-  .m_axis_dout_tdata(mixer_out_tdata)     // output wire [31 : 0] m_axis_dout_tdata. [31:16] Q(Imag) fix16_13; [15:0] I(Real) fix16_13
+  .m_axis_dout_tdata(mixer_out_tdata)     // output wire [79 : 0] m_axis_dout_tdata. [72:40] Q(Imag) fix33_30; [32:0] I(Real) fix33_30
 );
 
 // 鉴相器
 // sign( real(mixer_out) )*imag(mixer_out)  -  sign(imag(mixer_out))*real(mixer_out)
-reg signed [15:0] before_LF_plus;
-reg signed [15:0] before_LF_minus;
+reg signed [32:0] before_LF_plus;
+reg signed [32:0] before_LF_minus;
 reg               phase_detect_valid;
-wire signed [15:0] mixer_out_i;
-wire signed [15:0] mixer_out_q;
-assign mixer_out_i = mixer_out_tdata[15:0];
-assign mixer_out_q = mixer_out_tdata[31:16];
+wire signed [32:0] mixer_out_i;
+wire signed [32:0] mixer_out_q;
+assign mixer_out_i = mixer_out_tdata[32:0];
+assign mixer_out_q = mixer_out_tdata[72:40];
 // output module
-assign m_axis_i_sync_tdata = mixer_out_i;
-assign m_axis_q_sync_tdata = mixer_out_q;
+assign m_axis_i_sync_tdata = mixer_out_i[32:17];
+assign m_axis_q_sync_tdata = mixer_out_q[32:17];
 assign m_axis_i_sync_tvalid = mixer_out_tvalid;
 assign m_axis_q_sync_tvalid = mixer_out_tvalid;
 
@@ -79,14 +79,14 @@ always @(posedge aclk or negedge aresetn) begin
   end
   else begin
     phase_detect_valid <= mixer_out_tvalid;   // 一拍延迟
-    if (mixer_out_i[15]) begin
+    if (mixer_out_i[32]) begin
       before_LF_plus <= -mixer_out_q;
     end
     else begin
       before_LF_plus <= mixer_out_q;
     end
 
-    if (mixer_out_q[15]) begin
+    if (mixer_out_q[32]) begin
       before_LF_minus <= -mixer_out_i;
     end
     else begin
@@ -95,47 +95,46 @@ always @(posedge aclk or negedge aresetn) begin
   end
 end
 
-assign phase_detect = {before_LF_plus[15], before_LF_plus} - {before_LF_minus[15], before_LF_minus};  // [16:0] sfix17_13
+assign phase_detect = {before_LF_plus[32], before_LF_plus} - {before_LF_minus[32], before_LF_minus};  // [33:0] sfix34_30
 
-wire signed [17:0] loop_filter_out;
+wire signed [34:0] loop_filter_out;
 wire               loop_filter_out_valid;
 // 环路滤波器
 loop_filter lp
 (
    .rst_n(aresetn),
    .clk(aclk),
-   .pd(phase_detect),                // 鉴相器输出 [16:0] sfix17_13
+   .pd(phase_detect),                // 鉴相器输出 [33:0] sfix34_30
    .pd_valid(phase_detect_valid),
-   .dout(loop_filter_out), // loop filter 输出[17:0] sfix18_13
+   .dout(loop_filter_out), // loop filter 输出[34:0] sfix35_30
    .dout_valid(loop_filter_out_valid)
 );
 
 // 环路增益 K = 1/256
-wire signed [17:0] K_loop_filter;
-assign K_loop_filter = { {8{loop_filter_out[17]}}, loop_filter_out[17:8] };  // sfix18_13
+wire signed [34:0] K_loop_filter;
+assign K_loop_filter = { {8{loop_filter_out[34]}}, loop_filter_out[34:8] };  // sfix35_30
 
-reg signed [21:0] pacc;   // sfix22_13
+reg signed [38:0] pacc;   // sfix35_30
 
 // pacc = pacc + loop_filter_out
 
 always @(posedge aclk or negedge aresetn) begin
-  if(!aresetn) pacc <= 22'h1;
+  if(!aresetn) pacc <= 39'h1;
   else begin
-    if(loop_filter_out_valid) pacc <= pacc + K_loop_filter;
+    if(loop_filter_out_valid) pacc <= pacc + {{4{K_loop_filter[34]}}, K_loop_filter};
     else pacc <= pacc;
   end
 end
 
-reg signed [21:0] pacc_abs;  //// sfix22_13
+reg signed [38:0] pacc_abs;  //// sfix35_30
 
 always @(*) begin
-  if (pacc[21]) pacc_abs = +pacc;
+  if (pacc[38]) pacc_abs = +pacc;
   else pacc_abs = -pacc;
 end
 
-// 首先需要将小数点对齐，后补6
-// 位0，之后后面舍弃8位，即除256
+// 首先需要将小数点对齐  nco phase = ufix30_30
 // assign phase_offset_tdata = { {2'b0}, pacc_abs[21:0] };      // [23:0]   ufix21_21
-assign phase_offset_tdata = {  pacc_abs[15:0] , {8'b0}};      // [23:0]   ufix21_21
+assign phase_offset_tdata = { {2'b0}, pacc_abs[29:0] };  // ufix30_30
 assign phase_offset_tvalid = loop_filter_out_valid;
 endmodule
