@@ -10,14 +10,15 @@ fs = ps*sps;
 N = 40000;
 
 % 设置信噪比
-ebn0_db=40;
+ebn0_db=20;
 snr = (10^(ebn0_db/10))/sps*2;
 
 % i路基带数据
 data_i = sign(randn([1,N]));
 % q路基带数据
 data_q = sign(randn([1,N]));
-% 成形滤波
+% % 成形滤波
+% Hps = getFilter();
 % data_i = filter(Hps, data_i);
 % data_q = filter(Hps, data_q);
 
@@ -42,12 +43,48 @@ data_rx = data_rx * exp(1j*theta_e);
 
 
 %% 接收频偏, 如果不需要就注释掉下面的内容
-% delta_f = 60e3;
-% t = [0:(1/ps/sps):(N/ps-1/ps/sps)];
-% ejwt = exp(1j*2*pi*delta_f*t);
-% data_rx = data_rx .* ejwt;
+delta_f = 60e3;
+t = [0:(1/ps/sps):(N/ps-1/ps/sps)];
+ejwt = exp(1j*2*pi*delta_f*t);
+data_rx = data_rx .* ejwt;
 
+%% 接收匹配滤波器 RRC 
+rx_i = filter(Hps, real(data_rx));
+rx_q = filter(Hps, imag(data_rx));
+
+%% 匹配滤波器效果
+figure;
+subplot(321)
+plot(real(data_tx))
+title('data_i')
+xlim([0, 5000])
+subplot(322)
+plot(imag(data_tx))
+title('data_q')
+xlim([0, 5000])
+
+subplot(323)
+plot(real(data_rx))
+title('datarx_i')
+xlim([0, 5000])
+subplot(324)
+xlim([0, 5000])
+plot(imag(data_rx))
+title('datarx_q')
+xlim([0, 5000])
+
+subplot(325)
+plot(rx_i)
+title('RRCrx_i')
+xlim([0, 5000])
+subplot(326)
+xlim([0, 5000])
+plot(rx_q)
+title('RRCrx_q')
+xlim([0, 5000])
 %% 接收星座图
+figure;
+subplot(221)
 plot(data_rx, '.');
 
 
@@ -59,12 +96,17 @@ plot(data_rx, '.');
 mix_out = zeros(1, N*sps);     % 混频器输出, 这里应该就是基带信号了
 pacc = 0;                      % 单步环路滤波器输出(相位误差)
 pacc_curve = zeros(1, N*sps);  % 保存了每个单步相位误差, 用于绘制图像
+nco_out = zeros(1, N*sps);     % 保存本振输出
 pd_out = zeros(1, N*sps);      % 鉴相器输出
+d_freq_out = zeros(1, N*sps);  % 环路滤波器输出
 % 64点滑动滤波
 N_movmean = 64;
 for i=1:N*sps
+    % NCO
+    nco = exp(-1j*abs(pacc)*2*pi);
+    nco_out(i) = nco;
     % 混频器
-    mix_out(i) = data_rx(i) * exp(-1j*pacc);
+    mix_out(i) = data_rx(i) * nco;
     % 鉴相器
     pd_out(i) = sign(real(mix_out(i)))*imag(mix_out(i)) - sign(imag(mix_out(i)))*real(mix_out(i));
     % 滑动平均滤波, 实现loopfilter
@@ -76,14 +118,18 @@ for i=1:N*sps
            sum_mean =  sum_mean + pd_out(i-k);
         end
     end
-    d_freq = sum_mean/N_movmean/64*pi/2;
+    d_freq = sum_mean/N_movmean/256;
+    d_freq_out(i) = d_freq;
     pacc = pacc + d_freq;
     % update pacc
     pacc_curve(i) = pacc;
 end
 
+nco_real = real(nco_out);
+nco_imag = imag(nco_out);
 
 %% IIR做环路滤波器
+
 % mix_out = zeros(1, N*sps);      % 混频器输出, 这里应该就是基带信号了
 % pacc = 0;                       % 单步环路滤波器输出(相位误差)
 % pacc_curve = zeros(1, N*sps);   % 保存了每个单步相位误差, 用于绘制图
@@ -121,9 +167,20 @@ end
 %     pacc_curve(i) = pacc;
 % end
 
-
 %% 绘制解调后的图像
-figure;
+subplot(222)
 plot(mix_out, '.')
+subplot(2,2,[3,4])
+plot(pacc_curve)
+title("pacc")
+
 figure;
-plot(pd_out)
+subplot(211)
+plot(nco_real)
+hold on
+plot(nco_imag)
+legend("i", "q")
+title("nco out")
+subplot(212)
+plot(d_freq_out);
+title("d freq out");
