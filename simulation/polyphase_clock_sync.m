@@ -63,9 +63,6 @@ K0 = -1;
 % PI Controller Gains:
 [ K1, K2 ] = piLoopConstants(Kp, K0, eta, Bn_Ts, sps);
 
-if sps ~= 4
-   warning("sps must equ. to 4, because of the control loop ki kp are const.") 
-end
 Kp = K1;
 Ki = K2;
 Ksym = sqrt(2)/2;      % 将星座图的范围调整到 +-1 的系数

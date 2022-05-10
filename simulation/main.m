@@ -3,7 +3,7 @@ close all;
 %% 仿真参数设置
 
 N = 10000;  % 数据点数
-sps = 4;    % samples per symbol
+sps = 5;    % samples per symbol
 debug = 1;  % 调试选项
 rrc_rolloff = 0.5; % RRC 滤波器滚降系数
 EsN0     = 20;  % Target Es/N0
