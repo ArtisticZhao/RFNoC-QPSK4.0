@@ -3,7 +3,7 @@ close all;
 %% 仿真参数设置
 
 N = 10000;  % 数据点数
-sps = 10;    % samples per symbol
+sps = 4;    % samples per symbol
 debug = 1;  % 调试选项
 rrc_rolloff = 0.5; % RRC 滤波器滚降系数
 EsN0     = 20;  % Target Es/N0
@@ -20,7 +20,7 @@ fprintf("SNR = %f dB\n", snr);
 txSigPower = 1 / sqrt(sps);
 data_rx = awgn(data_tx, EsN0, txSigPower);
 % 接收相位差
-data_rx = data_rx .* exp(-1j* phaseOff);
+data_rx = data_rx .* exp(-1j* phaseOffset);
 % 接收频差
 t = (0: N*sps-1);
 data_rx = data_rx' .* exp(1j*2*pi * freqOffset * t);

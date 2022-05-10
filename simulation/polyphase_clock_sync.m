@@ -19,7 +19,8 @@ if debug
     title('interpolation factor & derivative match filter coeffs')
     hold on
     plot(derivativeFilterCoeffs)
-    legend('Match filter', 'Derivative match filter')
+    plot(interpCoeffs.*derivativeFilterCoeffs)
+    legend('Match filter', 'Derivative match filter', 'MF * dMF')
 end
 polyFilterBank = polyFilterGroup(interpCoeffs, n_filters);
 derivativePolyFilterBank = polyFilterGroup(derivativeFilterCoeffs, n_filters);
@@ -41,11 +42,32 @@ mu = zeros(1, N);      % Fractional symbol timing offset estimate
 m_k = 0;               % 滤波器输入index
 cnt = 1;               % 模1计数器
 vi = 0;
+
+%% 环路参数计算
+Bn_Ts    = 0.01;       % Loop noise bandwidth (Bn) times symbol period (Ts)
+eta      = 1;          % Loop damping factor
+Ex       = 1;          % Average symbol energy
+% Time-error Detector Gain (TED Gain)
+Kp = calcTedKp('MLTED', rollOff);
+
+% Scale Kp based on the average symbol energy (at the receiver)
+K  = 1; % Assume channel gain is unitary (or that an AGC is used)
+Kp = K * Ex * Kp;
+% NOTE: if using the GTED when K is not 1, note the scaling is K^2 not K.
+
+% Counter Gain
+K0 = -1;
+% Note: this is analogous to VCO or DDS gain, but in the context of timing
+% recovery loop.
+
+% PI Controller Gains:
+[ K1, K2 ] = piLoopConstants(Kp, K0, eta, Bn_Ts, sps);
+
 if sps ~= 4
    warning("sps must equ. to 4, because of the control loop ki kp are const.") 
 end
-Kp = -0.002368190349397;  % TODO
-Ki = -4.736380698794215e-06;
+Kp = K1;
+Ki = K2;
 Ksym = sqrt(2)/2;      % 将星座图的范围调整到 +-1 的系数
 strobe = 0; % 符号采样信号
 
