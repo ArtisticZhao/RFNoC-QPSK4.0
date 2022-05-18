@@ -8,7 +8,7 @@ from bitstring import BitArray
 
 N = 4000                        # 发射点数
 baudrate = 2.5e6                # 符号率 Hz
-sps = 8                         # 接收符号采样数
+sps = 4                         # 接收符号采样数
 fs = baudrate*sps               # 采样率
 ebn0_db = 40                    # energy per bit to noise power spectral density ratio
 snr = (10**(ebn0_db/10))/sps*2  # 信噪比
@@ -31,8 +31,8 @@ plt.scatter(data_rx.real, data_rx.imag, alpha=0.6)
 plt.show()
 
 # -- 保存接收数据到文件
-LSB = 2**-11  # 最小量化单位
-i_int = np.floor(data_rx.real/LSB)
+LSB = 2**-15  # 最小量化单位
+i_int = np.floor(data_rx.real/LSB)  # 转fixed-point, sfix16_15
 q_int = np.floor(data_rx.imag/LSB)
 
 f = open('iq_data.txt', 'w')
