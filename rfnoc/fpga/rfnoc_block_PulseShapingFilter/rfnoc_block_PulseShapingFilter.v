@@ -917,26 +917,27 @@ module rfnoc_block_PulseShapingFilter #(
   wire [15:0] i_sample;
   wire [15:0] q_sample;
 
-  wire [39:0] i_psf;
+  wire [15:0] i_psf;
   wire i_tvalid;
   wire i_tready;
   wire i_tlast;
-  wire [39:0] q_psf;
+  wire [15:0] q_psf;
   wire q_tvalid;
   wire q_tready;
   wire q_tlast;
   assign i_sample = m_in_payload_tdata[31:16];
   assign q_sample = m_in_payload_tdata[15:0];
+  wire m_in_payload_tready_;
   pulse_shaping_filter psf_i (
     .aclk(axis_data_clk),                              // input wire aclk
     .s_axis_data_tvalid(m_in_payload_tvalid),  // input wire s_axis_data_tvalid
-    .s_axis_data_tready(),  // output wire s_axis_data_tready
+    .s_axis_data_tready(m_in_payload_tready_),  // output wire s_axis_data_tready
     .s_axis_data_tlast(m_in_payload_tlast),    // input wire s_axis_data_tlast
     .s_axis_data_tdata(i_sample),    // input wire [15 : 0] s_axis_data_tdata
     .m_axis_data_tvalid(i_tvalid),  // output wire m_axis_data_tvalid
-    .m_axis_data_tready(s_out_payload_tready),  // input wire m_axis_data_tready
     .m_axis_data_tlast(i_tlast),    // output wire m_axis_data_tlast
-    .m_axis_data_tdata(i_psf)    // output wire [39 : 0] m_axis_data_tdata
+    .m_axis_data_tdata(i_psf),    // output wire [15 : 0] m_axis_data_tdata
+    .m_axis_data_tready(s_out_payload_tready)         // input wire m_axis_data_tready
   );
   pulse_shaping_filter psf_q (
     .aclk(axis_data_clk),                              // input wire aclk
@@ -945,13 +946,13 @@ module rfnoc_block_PulseShapingFilter #(
     .s_axis_data_tlast(m_in_payload_tlast),    // input wire s_axis_data_tlast
     .s_axis_data_tdata(q_sample),    // input wire [15 : 0] s_axis_data_tdata
     .m_axis_data_tvalid(q_tvalid),  // output wire m_axis_data_tvalid
-    .m_axis_data_tready(s_out_payload_tready),  // input wire m_axis_data_tready
     .m_axis_data_tlast(q_tlast),    // output wire m_axis_data_tlast
-    .m_axis_data_tdata(q_psf)    // output wire [39 : 0] m_axis_data_tdata
+    .m_axis_data_tdata(q_psf),    // output wire [15 : 0] m_axis_data_tdata
+    .m_axis_data_tready(s_out_payload_tready)         // input wire m_axis_data_tready
   );
-  assign s_out_payload_tdata  = {i_psf[39:24], q_psf[39:24]};
-  assign s_out_payload_tvalid = q_tvalid;
+  assign s_out_payload_tdata  = {i_psf, q_psf};
   assign s_out_payload_tlast  = q_tlast;
+  assign s_out_payload_tvalid = q_tvalid;
 
   // Context data, we are not doing anything with the context
   // (the CHDR header info) so we can simply pass through unchanged
