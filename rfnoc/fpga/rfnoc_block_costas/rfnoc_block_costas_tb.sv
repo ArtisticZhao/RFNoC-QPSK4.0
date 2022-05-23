@@ -174,7 +174,7 @@ module rfnoc_block_costas_tb;
     $display(`__FILE__);
     path = get_path_from_file(`__FILE__);
     $display(path);
-    filename = $sformatf("%s/../../../simulation/iq_data.txt", path);
+    filename = $sformatf("%s/../../../simulation/costas/iq_data.txt", path);
     fd = $fopen(filename, "r");
     // Read sim data file
     $display("-------------------");
@@ -182,7 +182,7 @@ module rfnoc_block_costas_tb;
     else $display("File %s open failed: %0d", filename, fd);
 
     // Write sim data file
-    filename = $sformatf("%s/../../../simulation/iq_out.txt", path);
+    filename = $sformatf("%s/../../../simulation/costas/iq_out.txt", path);
     fd_w = $fopen(filename, "w");
     $display("-------------------");
     if (fd_w) $display("File %s open successfully: %0d", filename, fd_w);

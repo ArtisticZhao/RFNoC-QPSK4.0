@@ -1,3 +1,4 @@
 *.txt
 *.mat
+__pycache__/
 
