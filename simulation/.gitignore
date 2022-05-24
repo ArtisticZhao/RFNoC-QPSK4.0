@@ -1,4 +1,5 @@
 *.txt
 *.mat
+*.lst
 __pycache__/
 

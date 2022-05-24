@@ -26,7 +26,7 @@ data_q = np.sign(np.random.uniform(-1, 1, N))
 data_tx = data_i + data_q*1j
 
 PHASE_OFFSET = pi/6
-FREQ_OFFSET = 0  # 20e3   # Hz
+FREQ_OFFSET = 20e3   # Hz
 
 # -- 产生接收数据
 data_rx = np.repeat(data_tx, sps)  # 每个符号采样N次
