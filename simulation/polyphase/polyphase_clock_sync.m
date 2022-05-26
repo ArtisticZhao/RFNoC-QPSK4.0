@@ -127,6 +127,9 @@ if debug
     title('mu')
 end
 
+% save to python plot
+save('./e_v_mu.mat', 'e', 'v', 'mu');
+
 end
 
 function polyFilterBank = polyFilterGroup(taps, n_filters)

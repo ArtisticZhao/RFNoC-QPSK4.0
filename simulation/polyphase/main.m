@@ -3,12 +3,12 @@ close all;
 %% 仿真参数设置
 
 N = 10000;  % 数据点数
-sps = 5;    % samples per symbol
+sps = 4;    % samples per symbol
 debug = 1;  % 调试选项
 rrc_rolloff = 0.5; % RRC 滤波器滚降系数
-EsN0     = 20;  % Target Es/N0
-phaseOffset = pi/6;   % 接收时的相位偏差
-freqOffset  = 60e3 / (2 * 2.5e6*sps);       % 接收时的频率偏差， 归一化频率 （数字频率）
+EsN0     = 10;  % Target Es/N0
+phaseOffset = 0; %pi/6;   % 接收时的相位偏差
+freqOffset  = 0; %60e3 / (2 * 2.5e6*sps);       % 接收时的频率偏差， 归一化频率 （数字频率）
 [data_tx, data_baseband] = qpsk_tx_gen(N, sps, rrc_rolloff, debug);
 
 % 计算信道参数
@@ -39,3 +39,7 @@ end
 % --------------------  RX ---------------------- 
 %% time 同步
 data_rx_sync = polyphase_clock_sync(sps, data_rx, rrc_rolloff, 32, debug);
+
+% save to python plot
+save("./datatx_rx.mat", 'data_rx', 'data_tx')
+save('./data_rx_sync.mat', 'data_rx_sync')
