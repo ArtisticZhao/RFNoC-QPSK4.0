@@ -4,8 +4,9 @@ import matplotlib.pyplot as plt
 import os
 import matplotlib as mpl
 mpl.rcParams["savefig.directory"] = os.chdir(os.path.dirname(os.path.abspath(__file__)))
-plt.rcParams["font.sans-serif"]=["SimHei"] #设置字体
-plt.rcParams["axes.unicode_minus"]=False #正常显示负号
+plt.rcParams["font.sans-serif"] = ["SimHei"]  # 设置字体
+plt.rcParams["axes.unicode_minus"] = False  # 正常显示负号
+
 
 def spectrum_plot(samples, fig=None, isreal=True, islog=False, window=0):
     window_size = window if window != 0 else samples.shape[0]
@@ -72,7 +73,7 @@ f = plt.subplot(2, 1, 1)
 ir, = f.plot(i_data)
 qr, = f.plot(q_data)
 f.set_xlim(0, 50)
-f.set_xlabel("采样点(n)",  horizontalalignment='right',  x=1.0)
+f.set_xlabel("采样点(n)")
 f.set_ylabel("归一化幅值")
 f.set_title("(a) 根升余弦滚降滤波器模块输入", y=-0.4)
 f.legend([ir, qr], ['Real', 'Imag'], loc="upper right")
@@ -81,7 +82,7 @@ f = plt.subplot(2, 1, 2)
 ir, = f.plot(i_)
 qr, = f.plot(q_)
 f.set_xlim(0, 50)
-f.set_xlabel("采样点(n)",  horizontalalignment='right',  x=1.0)
+f.set_xlabel("采样点(n)")
 f.set_ylabel("归一化幅值")
 f.set_title("(b) 根升余弦滚降滤波器模块输出",  y=-0.4)
 f.legend([ir, qr], ['Real', 'Imag'], loc="upper right")
@@ -93,13 +94,13 @@ out_data = np.array(i_) + 1j*np.array(q_)
 plt.figure(1)
 f = plt.subplot(1, 2, 1)
 f.set_title("(a) 基带信号频谱", y=-0.2)
-f.set_xlabel(r"归一化频率(f)",  horizontalalignment='right',  x=1.0)
+f.set_xlabel(r"归一化频率(f)")
 f.set_ylabel(r"功率谱密度/dB")
 f.set_ylim(-20, 40)
 in_f = spectrum_plot(in_data, f, isreal=False, islog=True, window=1024)
 f = plt.subplot(1, 2, 2)
 f.set_title("(b) 根升余弦滚降滤波器输出频谱", y=-0.2)
-f.set_xlabel(r"归一化频率(f)",  horizontalalignment='right',  x=1.0)
+f.set_xlabel(r"归一化频率(f)")
 f.set_ylabel(r"功率谱密度/dB")
 f.set_ylim(-20, 40)
 in_f = spectrum_plot(out_data, f, isreal=False, islog=True, window=1024)

@@ -65,10 +65,20 @@ legend = f.get_legend()
 for lh in legend.legendHandles:
     lh.set_alpha(1)
 
+# 取出pd中间的莫名奇妙的0
+pd = df['pd']
+last = pd[0]
+print(len(pd))
+for i in range(len(pd)):
+    if abs(pd[i]) < 1000*2**13:
+        print(f"i={i}, {pd[i]}, {last}")
+        pd[i] = last
+    last = pd[i]
+        
 # 中间数据绘制
 plt.figure()
 plt.subplot(2, 1, 1)
-plt.plot(df['pd']/2**13)
+plt.plot(pd/2**13)
 plt.xlim(0, 3000)
 plt.title("(a) 鉴相器输出曲线", y=-0.45)
 plt.xlabel("采样点(n)")
