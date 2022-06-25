@@ -18,6 +18,9 @@ reg [3:0] sender_cnt;  // 发送计数器，0~15 收一个数，输出16个数
 parameter ONE = 16'h6665;
 parameter ZERO = 16'h999B;
 
+// parameter ONE = 16'h0001;
+// parameter ZERO = 16'h0000;
+
 wire sample;
 assign sample = in_tvalid && in_tready;
 
@@ -92,7 +95,7 @@ always @(*) begin
       nstate = SEND;
     end
     SEND: begin
-      if (sender_cnt == 14 && out_tvalid && out_tready) begin  // 发送15位后 第16位进入到SEND_LAST状态，来判断是否进入IDLE
+      if (sender_cnt == 15 && out_tvalid && out_tready) begin  // 发送15位后 第16位进入到SEND_LAST状态，来判断是否进入IDLE
         nstate = SEND_LAST;
       end
       else begin
@@ -138,10 +141,38 @@ always @(posedge clk or posedge reset) begin
         else begin
         end
         out_tvalid <= 1;
+        case ({in_tdata_reg[cnt_m2p1], in_tdata_reg[cnt_m2]})
+            2'b00: begin
+              out_tdata[31:0] = {ZERO, ZERO};
+            end
+            2'b01: begin
+              out_tdata[31:0] = {ZERO, ONE};
+            end
+            2'b11: begin
+              out_tdata[31:0] = {ONE, ONE};
+            end
+            2'b10: begin
+              out_tdata[31:0] = {ONE, ZERO};
+            end
+        endcase
       end
       SEND_LAST: begin
         in_tready <= 1;
         out_tvalid <= 1;
+        case ({in_tdata_reg[cnt_m2p1], in_tdata_reg[cnt_m2]})
+            2'b00: begin
+              out_tdata[31:0] = {ZERO, ZERO};
+            end
+            2'b01: begin
+              out_tdata[31:0] = {ZERO, ONE};
+            end
+            2'b11: begin
+              out_tdata[31:0] = {ONE, ONE};
+            end
+            2'b10: begin
+              out_tdata[31:0] = {ONE, ZERO};
+            end
+        endcase
       end
       default: begin
         in_tready <= 1;
@@ -156,22 +187,22 @@ end
 // assign out_tdata[0] = in_tdata_reg[cnt_m2];
 // assign out_tdata[1] = in_tdata_reg[cnt_m2p1];
 
-// remap output value to DAC output.
-always @(*) begin
-  case ({in_tdata_reg[cnt_m2p1], in_tdata_reg[cnt_m2]})
-    2'b00: begin
-      out_tdata[31:0] = {ONE, ONE};
-    end
-    2'b01: begin
-      out_tdata[31:0] = {ZERO, ONE};
-    end
-    2'b11: begin
-      out_tdata[31:0] = {ZERO, ZERO};
-    end
-    2'b10: begin
-      out_tdata[31:0] = {ONE, ZERO};
-    end
-  endcase
-end
+//// remap output value to DAC output.
+//always @(*) begin
+//  case ({in_tdata_reg[cnt_m2p1], in_tdata_reg[cnt_m2]})
+//    2'b00: begin
+//      out_tdata[31:0] = {ONE, ONE};
+//    end
+//    2'b01: begin
+//      out_tdata[31:0] = {ZERO, ONE};
+//    end
+//    2'b11: begin
+//      out_tdata[31:0] = {ZERO, ZERO};
+//    end
+//    2'b10: begin
+//      out_tdata[31:0] = {ONE, ZERO};
+//    end
+//  endcase
+//end
 
 endmodule

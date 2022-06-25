@@ -305,6 +305,23 @@ module rfnoc_block_conv32Bto2B #(
     .out_tvalid(sample_qpsk_tvalid),
     .out_tready(sample_qpsk_tready)
   );
+//  Downsizer #(
+//    .G_RESET_ACTIVE(1),
+//    .WIDTH(2),
+//    .NUM_REG(16)
+  
+//  ) mt (
+//    .clk(axis_data_clk), .rst(axis_data_rst),
+  
+//    .s_axis_tarray(sample_data[31:0]),
+//    .s_axis_tvalid(sample_tvalid),
+//    .s_axis_tready(sample_tready),
+    
+//    .m_axis_tdata(sample_qpsk_data[1:0]),
+//    .m_axis_tvalid(sample_qpsk_tvalid),
+//    .m_axis_tready(sample_qpsk_tready)
+//  );
+  
 
   Repeater#(
     .N(N))

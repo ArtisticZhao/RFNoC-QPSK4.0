@@ -94,7 +94,7 @@ connections:
   # Custom block connection: ep4 to conv32Bto2B0 and conv32Bto2B0 to ep4
   - { srcblk: ep4, srcport: out0, dstblk: conv32Bto2B0, dstport: in }
   - { srcblk: conv32Bto2B0, srcport: out, dstblk: ep4, dstport: in0 }
-  # Custom block connection: ep5 to PulseShapingFilter0 and PulseShapingFilter0 to ep4
+  # Custom block connection: ep5 to PulseShapingFilter0 and PulseShapingFilter0 to ep5
   - { srcblk: ep5, srcport: out0, dstblk: PulseShapingFilter0, dstport: in }
   - { srcblk: PulseShapingFilter0, srcport: out, dstblk: ep5, dstport: in0 }
   # BSP Connections

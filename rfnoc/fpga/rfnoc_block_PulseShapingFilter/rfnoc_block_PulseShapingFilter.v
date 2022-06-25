@@ -950,7 +950,8 @@ module rfnoc_block_PulseShapingFilter #(
     .m_axis_data_tdata(q_psf),    // output wire [15 : 0] m_axis_data_tdata
     .m_axis_data_tready(s_out_payload_tready)         // input wire m_axis_data_tready
   );
-  assign s_out_payload_tdata  = {i_psf, q_psf};
+  assign s_out_payload_tdata  = {{i_psf[15], i_psf[13:0], 1'b0}, {q_psf[15], q_psf[13:0], 1'b0}};
+  // assign s_out_payload_tdata  = {i_psf, q_psf};
   assign s_out_payload_tlast  = q_tlast;
   assign s_out_payload_tvalid = q_tvalid;
 

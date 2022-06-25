@@ -1,4 +1,3 @@
-
 options:
   parameters:
     author: ''
@@ -71,7 +70,7 @@ blocks:
     gui_hint: ''
     label: Sampling Rate (Hz)
     type: real
-    value: 1e6
+    value: 10e6/2/16
   states:
     bus_sink: false
     bus_source: false
@@ -142,47 +141,136 @@ blocks:
     coordinate: [840, 8.0]
     rotation: 0
     state: true
-- name: analog_sig_source_x_0
-  id: analog_sig_source_x
+- name: analog_noise_source_x_0
+  id: analog_noise_source_x
   parameters:
     affinity: ''
     alias: ''
-    amp: variable_qtgui_range_amplitude
+    amp: '1'
     comment: ''
-    freq: variable_qtgui_range_freq
     maxoutbuf: '0'
     minoutbuf: '0'
-    offset: '0'
-    phase: '0'
-    samp_rate: samp_rate
+    noise_type: analog.GR_GAUSSIAN
+    seed: '0'
     type: complex
-    waveform: analog.GR_COS_WAVE
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [32, 200.0]
+    coordinate: [248, 228.0]
     rotation: 0
-    state: enabled
-- name: blocks_throttle_0
-  id: blocks_throttle
+    state: true
+- name: analog_random_source_x_0
+  id: analog_random_source_x
   parameters:
     affinity: ''
     alias: ''
     comment: ''
-    ignoretag: 'True'
+    max: '1'
+    maxoutbuf: '0'
+    min: '-1'
+    minoutbuf: '0'
+    num_samps: '1000'
+    repeat: 'True'
+    type: int
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 348.0]
+    rotation: 0
+    state: disabled
+- name: analog_random_source_x_0_0
+  id: analog_random_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    max: '1'
+    maxoutbuf: '0'
+    min: '-1'
+    minoutbuf: '0'
+    num_samps: '1000'
+    repeat: 'True'
+    type: int
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 468.0]
+    rotation: 0
+    state: disabled
+- name: blocks_float_to_complex_0
+  id: blocks_float_to_complex
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    samples_per_second: samp_rate
-    type: complex
     vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [272, 240.0]
+    coordinate: [320, 376.0]
     rotation: 0
-    state: true
+    state: disabled
+- name: blocks_int_to_float_0
+  id: blocks_int_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale: '1'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [176, 372.0]
+    rotation: 0
+    state: disabled
+- name: blocks_int_to_float_0_0
+  id: blocks_int_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale: '1'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [168, 492.0]
+    rotation: 0
+    state: disabled
+- name: ettus_rfnoc_duc_0
+  id: ettus_rfnoc_duc
+  parameters:
+    affinity: ''
+    alias: ''
+    block_args: ''
+    comment: ''
+    device_select: '-1'
+    freq: '0'
+    input_rate: samp_rate*16*4
+    instance_index: '-1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_chans: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [888, 372.0]
+    rotation: 0
+    state: enabled
 - name: ettus_rfnoc_rx_streamer_0
   id: ettus_rfnoc_rx_streamer
   parameters:
@@ -200,9 +288,32 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [896, 248.0]
+    coordinate: [960, 248.0]
     rotation: 0
-    state: true
+    state: disabled
+- name: ettus_rfnoc_tx_radio_0
+  id: ettus_rfnoc_tx_radio
+  parameters:
+    affinity: ''
+    agc: Default
+    alias: ''
+    antenna: TX/RX
+    bandwidth: '0'
+    block_args: ''
+    comment: ''
+    device_select: '-1'
+    frequency: 1.2e9
+    gain: '70'
+    instance_index: '-1'
+    num_chans: '1'
+    rate: samp_rate
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1184, 172.0]
+    rotation: 0
+    state: enabled
 - name: ettus_rfnoc_tx_streamer_0
   id: ettus_rfnoc_tx_streamer
   parameters:
@@ -223,6 +334,117 @@ blocks:
     coordinate: [480, 248.0]
     rotation: 0
     state: true
+- name: qpsk_conv32Bto2B_0
+  id: qpsk_conv32Bto2B
+  parameters:
+    affinity: ''
+    alias: ''
+    block_args: ''
+    comment: ''
+    device_select: '-1'
+    instance_select: '-1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    user_reg: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [720, 220.0]
+    rotation: 0
+    state: true
+- name: qtgui_const_sink_x_0
+  id: qtgui_const_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: '"blue"'
+    color10: '"red"'
+    color2: '"red"'
+    color3: '"red"'
+    color4: '"red"'
+    color5: '"red"'
+    color6: '"red"'
+    color7: '"red"'
+    color8: '"red"'
+    color9: '"red"'
+    comment: ''
+    grid: 'False'
+    gui_hint: ''
+    label1: ''
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'True'
+    marker1: '0'
+    marker10: '0'
+    marker2: '0'
+    marker3: '0'
+    marker4: '0'
+    marker5: '0'
+    marker6: '0'
+    marker7: '0'
+    marker8: '0'
+    marker9: '0'
+    name: '""'
+    nconnections: '1'
+    size: '1024'
+    style1: '0'
+    style10: '0'
+    style2: '0'
+    style3: '0'
+    style4: '0'
+    style5: '0'
+    style6: '0'
+    style7: '0'
+    style8: '0'
+    style9: '0'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: complex
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    xmax: '2'
+    xmin: '-2'
+    ymax: '2'
+    ymin: '-2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1128, 68.0]
+    rotation: 0
+    state: disabled
 - name: qtgui_time_sink_x_0
   id: qtgui_time_sink_x
   parameters:
@@ -317,36 +539,23 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1120, 224.0]
+    coordinate: [536, 532.0]
     rotation: 0
-    state: true
-- name: tutorial_conv32Bto2B_0
-  id: tutorial_conv32Bto2B
-  parameters:
-    affinity: ''
-    alias: ''
-    block_args: ''
-    comment: ''
-    device_select: '-1'
-    instance_select: '-1'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    user_reg: variable_qtgui_range_user_reg
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [688, 216.0]
-    rotation: 0
-    state: true
+    state: disabled
 
 connections:
-- [analog_sig_source_x_0, '0', blocks_throttle_0, '0']
-- [blocks_throttle_0, '0', ettus_rfnoc_tx_streamer_0, '0']
-- [ettus_rfnoc_rx_streamer_0, '0', qtgui_time_sink_x_0, '0']
-- [ettus_rfnoc_tx_streamer_0, '0', tutorial_conv32Bto2B_0, '0']
-- [tutorial_conv32Bto2B_0, '0', ettus_rfnoc_rx_streamer_0, '0']
+- [analog_noise_source_x_0, '0', ettus_rfnoc_tx_streamer_0, '0']
+- [analog_random_source_x_0, '0', blocks_int_to_float_0, '0']
+- [analog_random_source_x_0_0, '0', blocks_int_to_float_0_0, '0']
+- [blocks_float_to_complex_0, '0', ettus_rfnoc_tx_streamer_0, '0']
+- [blocks_float_to_complex_0, '0', qtgui_time_sink_x_0, '0']
+- [blocks_int_to_float_0, '0', blocks_float_to_complex_0, '0']
+- [blocks_int_to_float_0_0, '0', blocks_float_to_complex_0, '1']
+- [ettus_rfnoc_duc_0, '0', ettus_rfnoc_tx_radio_0, '0']
+- [ettus_rfnoc_rx_streamer_0, '0', qtgui_const_sink_x_0, '0']
+- [ettus_rfnoc_tx_streamer_0, '0', qpsk_conv32Bto2B_0, '0']
+- [qpsk_conv32Bto2B_0, '0', ettus_rfnoc_duc_0, '0']
+- [qpsk_conv32Bto2B_0, '0', ettus_rfnoc_rx_streamer_0, '0']
 
 metadata:
   file_format: 1
-

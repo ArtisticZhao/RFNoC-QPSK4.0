@@ -13,6 +13,7 @@ synth/pulse_shaping_filter.vhd \
 # 这里的IP_BUILD_DIR 指向 <uhd-repo>/fpga/usrp3/top/x300/build-ip/xc7k410tffg900-2
 # 其中x300 xc7k410tffg900-2 是根据所使用的USRP平台而改变的
 $(info IP_BUILD_DIR in ip folder [${IP_BUILD_DIR}])
+$(info $$LIB_IP_PULSE_SHAPING_FILTER_SRCS [${LIB_IP_PULSE_SHAPING_FILTER_SRCS}])
 
 # 调用ip编译命令
 # -------------------------------------------------------------------
@@ -26,5 +27,5 @@ $(info IP_BUILD_DIR in ip folder [${IP_BUILD_DIR}])
 # Prereqs:
 # - TOOLS_DIR must be defined globally
 # -------------------------------------------------------------------
-$(LIB_IP_PULSE_SHAPING_FILTER_SRCS) $(LIB_IP_PULSE_SHAPING_FILTER_OUTS) : $(RFNOC_FPGA_DIR)/ip/pulse_shaping_filter/pulse_shaping_filter.xci
+$(LIB_IP_PULSE_SHAPING_FILTER_SRCS) $(LIB_IP_PULSE_SHAPING_FILTER_OUTS) : $(IP_DIR)/ip/pulse_shaping_filter/pulse_shaping_filter.xci
 	$(call BUILD_VIVADO_IP,pulse_shaping_filter,$(ARCH),$(PART_ID),$(RFNOC_FPGA_DIR)/ip,$(IP_BUILD_DIR),0)
