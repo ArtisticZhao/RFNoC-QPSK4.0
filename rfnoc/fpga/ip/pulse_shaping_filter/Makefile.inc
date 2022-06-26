@@ -27,5 +27,5 @@ $(info $$LIB_IP_PULSE_SHAPING_FILTER_SRCS [${LIB_IP_PULSE_SHAPING_FILTER_SRCS}])
 # Prereqs:
 # - TOOLS_DIR must be defined globally
 # -------------------------------------------------------------------
-$(LIB_IP_PULSE_SHAPING_FILTER_SRCS) $(LIB_IP_PULSE_SHAPING_FILTER_OUTS) : $(IP_DIR)/ip/pulse_shaping_filter/pulse_shaping_filter.xci
-	$(call BUILD_VIVADO_IP,pulse_shaping_filter,$(ARCH),$(PART_ID),$(RFNOC_FPGA_DIR)/ip,$(IP_BUILD_DIR),0)
+$(LIB_IP_PULSE_SHAPING_FILTER_SRCS) $(LIB_IP_PULSE_SHAPING_FILTER_OUTS) : $(OOT_FPGA_DIR)/ip/pulse_shaping_filter/pulse_shaping_filter.xci
+	$(call BUILD_VIVADO_IP,pulse_shaping_filter,$(ARCH),$(PART_ID),$(OOT_FPGA_DIR)/ip,$(IP_BUILD_DIR),0)

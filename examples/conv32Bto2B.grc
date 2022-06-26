@@ -334,6 +334,25 @@ blocks:
     coordinate: [480, 248.0]
     rotation: 0
     state: true
+- name: qpsk_PulseShapingFilter_0
+  id: qpsk_PulseShapingFilter
+  parameters:
+    affinity: ''
+    alias: ''
+    block_args: ''
+    comment: ''
+    device_select: '-1'
+    instance_select: '-1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    user_reg: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [624, 372.0]
+    rotation: 0
+    state: enabled
 - name: qpsk_conv32Bto2B_0
   id: qpsk_conv32Bto2B
   parameters:
@@ -554,8 +573,9 @@ connections:
 - [ettus_rfnoc_duc_0, '0', ettus_rfnoc_tx_radio_0, '0']
 - [ettus_rfnoc_rx_streamer_0, '0', qtgui_const_sink_x_0, '0']
 - [ettus_rfnoc_tx_streamer_0, '0', qpsk_conv32Bto2B_0, '0']
-- [qpsk_conv32Bto2B_0, '0', ettus_rfnoc_duc_0, '0']
+- [qpsk_PulseShapingFilter_0, '0', ettus_rfnoc_duc_0, '0']
 - [qpsk_conv32Bto2B_0, '0', ettus_rfnoc_rx_streamer_0, '0']
+- [qpsk_conv32Bto2B_0, '0', qpsk_PulseShapingFilter_0, '0']
 
 metadata:
   file_format: 1

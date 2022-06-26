@@ -26,5 +26,5 @@ $(info IP_BUILD_DIR in ip folder [${IP_BUILD_DIR}])
 # Prereqs:
 # - TOOLS_DIR must be defined globally
 # -------------------------------------------------------------------
-$(LIB_IP_NCO_SRCS) $(LIB_IP_NCO_OUTS) : $(RFNOC_FPGA_DIR)/ip/nco/nco.xci
-	$(call BUILD_VIVADO_IP,nco,$(ARCH),$(PART_ID),$(RFNOC_FPGA_DIR)/ip,$(IP_BUILD_DIR),0)
+$(LIB_IP_NCO_SRCS) $(LIB_IP_NCO_OUTS) : $(OOT_FPGA_DIR)/ip/nco/nco.xci
+	$(call BUILD_VIVADO_IP,nco,$(ARCH),$(PART_ID),$(OOT_FPGA_DIR)/ip,$(IP_BUILD_DIR),0)

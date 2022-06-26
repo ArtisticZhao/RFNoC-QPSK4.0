@@ -1,13 +1,16 @@
 
 # Current path
-RFNOC_FPGA_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+OOT_FPGA_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-# Include Makefile.srcs for all subdirectories automatically
-SUBDIRS_MAKEFILE_SRCS = $(wildcard $(RFNOC_FPGA_DIR)/*/Makefile.srcs)
-include $(SUBDIRS_MAKEFILE_SRCS)
+# One include statement for every RFNoC block with its own subdirectory, which
+# itself will contain a Makefile.srcs
+include $(OOT_FPGA_DIR)/rfnoc_block_conv32Bto2B/Makefile.srcs
+include $(OOT_FPGA_DIR)/rfnoc_block_costas/Makefile.srcs
+include $(OOT_FPGA_DIR)/rfnoc_block_PulseShapingFilter/Makefile.srcs
 
-LIB_IP_PULSE_SHAPING_FILTER_SRCS = $(IP_BUILD_DIR)/pulse_shaping_filter/pulse_shaping_filter.xci
-
+include $(OOT_FPGA_DIR)/ip/pulse_shaping_filter/Makefile.inc
+include $(OOT_FPGA_DIR)/ip/nco/Makefile.inc
+include $(OOT_FPGA_DIR)/ip/cmpy_0/Makefile.inc
 LIB_IP_XCI_SRCS += $(LIB_IP_PULSE_SHAPING_FILTER_SRCS)
 LIB_IP_XCI_SRCS += $(LIB_IP_CMPY_0_SRCS)
 LIB_IP_XCI_SRCS += $(LIB_IP_NCO_SRCS)

@@ -103,6 +103,12 @@ class rfnoc_conv32Bto2B(gr.top_block, Qt.QWidget):
           -1,
           -1)
         self.qpsk_conv32Bto2B_0.set_int_property('user_reg', 0)
+        self.qpsk_PulseShapingFilter_0 = qpsk.PulseShapingFilter(
+          self.rfnoc_graph,
+          uhd.device_addr(''),
+          -1,
+          -1)
+        self.qpsk_PulseShapingFilter_0.set_int_property('user_reg', 0)
         self.ettus_rfnoc_tx_streamer_0 = ettus.rfnoc_tx_streamer(
             self.rfnoc_graph,
             1,
@@ -139,7 +145,8 @@ class rfnoc_conv32Bto2B(gr.top_block, Qt.QWidget):
         ##################################################
         self.rfnoc_graph.connect(self.ettus_rfnoc_duc_0.get_unique_id(), 0, self.ettus_rfnoc_tx_radio_0.get_unique_id(), 0, False)
         self.rfnoc_graph.connect(self.ettus_rfnoc_tx_streamer_0.get_unique_id(), 0, self.qpsk_conv32Bto2B_0.get_unique_id(), 0, False)
-        self.rfnoc_graph.connect(self.qpsk_conv32Bto2B_0.get_unique_id(), 0, self.ettus_rfnoc_duc_0.get_unique_id(), 0, False)
+        self.rfnoc_graph.connect(self.qpsk_PulseShapingFilter_0.get_unique_id(), 0, self.ettus_rfnoc_duc_0.get_unique_id(), 0, False)
+        self.rfnoc_graph.connect(self.qpsk_conv32Bto2B_0.get_unique_id(), 0, self.qpsk_PulseShapingFilter_0.get_unique_id(), 0, False)
         self.connect((self.analog_noise_source_x_0, 0), (self.ettus_rfnoc_tx_streamer_0, 0))
 
 
